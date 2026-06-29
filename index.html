@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>លំហាត់គណិតវិទ្យាថ្នាក់ទី១ - មេរៀនទី១</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&family=Suwannaphum:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Hanuman', 'Suwannaphum', sans-serif;
+            background-color: #f3e8ff;
+            color: #1f2937;
+        }
+
+        .draggable {
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        .droppable {
+            min-width: 60px;
+            min-height: 60px;
+            border: 3px dashed #a78bfa;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            font-weight: bold;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .droppable.drag-over {
+            background-color: #ede9fe;
+            border-color: #8b5cf6;
+            transform: scale(1.05);
+        }
+
+        .emoji-icon {
+            font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+        }
+
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideDown 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="p-2 md:p-6 pb-20">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 hidden bg-green-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-bold">
+        <span>🟢</span> <span id="toast-msg">បានភ្ជាប់ទិន្នន័យពី Google Sheets ជោគជ័យ!</span>
+    </div>
+
+    <div class="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-purple-300">
+        
+        <!-- Header -->
+        <header class="bg-purple-600 p-4 md:p-6 text-white flex flex-col md:flex-row justify-between items-center gap-6 relative shadow-md">
+            <div class="flex items-center gap-4">
+                <div class="w-20 h-20 bg-white rounded-full flex flex-col items-center justify-center overflow-hidden border-4 border-purple-300 shadow-inner flex-shrink-0">
+                    <span class="text-3xl">🏫</span>
+                    <span class="text-[10px] text-purple-600 font-bold leading-tight mt-1">Logo សាលា</span>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold mb-1 drop-shadow-md">គណិតវិទ្យា ថ្នាក់ទី១</h1>
+                    <h2 class="text-lg md:text-xl text-purple-200">មេរៀនទី១ ៖ ចំនួន ១ ដល់ ៥ <span class="bg-purple-800 text-xs px-2 py-1 rounded-full ml-2">២០ លំហាត់</span></h2>
+                </div>
+            </div>
+
+            <div class="bg-purple-500/50 p-3 rounded-2xl border border-purple-400 flex items-center gap-4 backdrop-blur-sm shadow-inner">
+                <div class="flex flex-col">
+                    <label for="student-select" class="text-xs text-purple-100 mb-1 flex items-center gap-1">
+                        <svg class="w-3 h-3 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
+                        ទិន្នន័យពី Google Sheets
+                    </label>
+                    <select id="student-select" onchange="onStudentSelect()" class="text-gray-800 p-2 rounded-lg outline-none font-bold bg-white border-2 border-purple-300 focus:border-purple-500 cursor-pointer min-w-[150px]">
+                        <option value="">-- រើសឈ្មោះសិស្ស --</option>
+                    </select>
+                </div>
+                <div id="student-photo-container" class="w-14 h-14 bg-white rounded-full overflow-hidden hidden border-4 border-green-400 shadow-md flex-shrink-0 transition-transform transform hover:scale-110">
+                    <img id="student-photo" src="" alt="Student Photo" class="w-full h-full object-cover bg-gray-100">
+                </div>
+            </div>
+        </header>
+
+        <div class="p-4 md:p-8 space-y-10">
+            
+            <!-- ផ្នែកទី១: វាយលេខបញ្ចូល -->
+            <section class="bg-pink-50 p-4 md:p-6 rounded-2xl border-2 border-pink-200 shadow-sm relative">
+                <div class="absolute -top-4 left-6 bg-pink-500 text-white px-4 py-1 rounded-full font-bold shadow-md">ផ្នែកទី១ (៧ ចំណុច)</div>
+                <h3 class="text-xl font-bold text-pink-800 mt-2 mb-6 flex items-center gap-2">
+                    <span class="text-2xl">⌨️</span> ចូរសរសេរលេខឱ្យត្រូវនឹងចំនួនរូបភាពខាងក្រោម៖
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <script>
+                        const q1_data = [
+                            {id: 'q1', emoji: '🍎', count: 3}, {id: 'q2', emoji: '🚗', count: 2},
+                            {id: 'q3', emoji: '⚽', count: 5}, {id: 'q4', emoji: '🎈', count: 4},
+                            {id: 'q5', emoji: '🐱', count: 1}, {id: 'q6', emoji: '🌸', count: 3},
+                            {id: 'q7', emoji: '🦋', count: 5}
+                        ];
+                        q1_data.forEach(item => {
+                            let emojisHtml = '';
+                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-3xl emoji-icon inline-block m-1 hover:scale-125 transition-transform">${item.emoji}</span>`;
+                            document.write(`
+                                <div class="bg-white p-4 rounded-xl shadow-sm border border-pink-100 flex flex-col items-center justify-between gap-3 hover:shadow-md transition-shadow">
+                                    <div class="bg-pink-50 w-full min-h-[80px] rounded-lg flex flex-wrap items-center justify-center p-2 mb-2 border border-pink-100">${emojisHtml}</div>
+                                    <div class="flex items-center gap-2 w-full justify-center">
+                                        <span class="text-xl font-bold text-gray-400">=</span>
+                                        <input type="number" id="input-${item.id}" class="w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 border-gray-300 focus:border-pink-500 outline-none" min="1" max="5">
+                                        <button onclick="checkTyping('${item.id}', ${item.count})" class="bg-pink-500 hover:bg-pink-600 text-white font-bold h-14 px-4 rounded-lg shadow active:scale-95">ផ្ទៀង</button>
+                                    </div>
+                                    <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
+                                </div>
+                            `);
+                        });
+                    </script>
+                </div>
+            </section>
+
+            <!-- ផ្នែកទី២: ទាញលេខដាក់ -->
+            <section class="bg-blue-50 p-4 md:p-6 rounded-2xl border-2 border-blue-200 shadow-sm relative">
+                <div class="absolute -top-4 left-6 bg-blue-500 text-white px-4 py-1 rounded-full font-bold shadow-md">ផ្នែកទី២ (៦ ចំណុច)</div>
+                <h3 class="text-xl font-bold text-blue-800 mt-2 mb-4 flex items-center gap-2">
+                    <span class="text-2xl">👆</span> ចូរទាញលេខពីខាងលើ ទៅដាក់ក្នុងប្រអប់ខាងក្រោម៖
+                </h3>
+                <div class="bg-white/80 p-3 rounded-xl border border-blue-200 flex justify-center gap-2 sm:gap-4 flex-wrap mb-6 sticky top-2 z-10 backdrop-blur shadow-sm">
+                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="1">១</div>
+                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="2">២</div>
+                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="3">៣</div>
+                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="4">៤</div>
+                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="5">៥</div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <script>
+                        const q2_data = [
+                            {id: 'd1', emoji: '🐶', count: 2}, {id: 'd2', emoji: '⭐', count: 4},
+                            {id: 'd3', emoji: '🐟', count: 3}, {id: 'd4', emoji: '🐥', count: 5},
+                            {id: 'd5', emoji: '🍓', count: 1}, {id: 'd6', emoji: '🍦', count: 2}
+                        ];
+                        q2_data.forEach(item => {
+                            let emojisHtml = '';
+                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-4xl emoji-icon m-1 hover:-translate-y-1 transition-transform inline-block">${item.emoji}</span>`;
+                            document.write(`
+                                <div class="bg-white p-5 rounded-2xl shadow-sm border-b-4 border-blue-200 flex flex-col items-center justify-center gap-4 hover:border-blue-400 transition-colors">
+                                    <div class="flex flex-wrap justify-center min-h-[60px]">${emojisHtml}</div>
+                                    <div class="flex items-center gap-4 bg-blue-50 p-2 rounded-xl w-full justify-center border border-blue-100">
+                                        <span class="text-2xl font-bold text-blue-300">=</span>
+                                        <div class="droppable w-16 h-16 bg-white" data-answer="${item.count}" id="${item.id}"></div>
+                                    </div>
+                                    <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
+                                </div>
+                            `);
+                        });
+                    </script>
+                </div>
+            </section>
+
+            <!-- ផ្នែកទី៣: រូបភាព និងប្រអប់បញ្ចូល -->
+            <section class="bg-orange-50 p-4 md:p-6 rounded-2xl border-2 border-orange-200 shadow-sm relative">
+                <div class="absolute -top-4 left-6 bg-orange-500 text-white px-4 py-1 rounded-full font-bold shadow-md">ផ្នែកទី៣ (៧ ចំណុច)</div>
+                <h3 class="text-xl font-bold text-orange-800 mt-2 mb-6 flex items-center gap-2">
+                    <span class="text-2xl">🖼️</span> ចូររាប់ចំនួនរូបភាព រួចសរសេរលេខចូលក្នុងប្រអប់៖
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    <script>
+                        const q3_data = [
+                            {id: 'b1', emoji: '🦆', count: 5}, {id: 'b2', emoji: '🐢', count: 2},
+                            {id: 'b3', emoji: '🐞', count: 4}, {id: 'b4', emoji: '🍄', count: 3},
+                            {id: 'b5', emoji: '🌞', count: 1}, {id: 'b6', emoji: '🌙', count: 2},
+                            {id: 'b7', emoji: '🌲', count: 4}
+                        ];
+                        q3_data.forEach(item => {
+                            let emojisHtml = '';
+                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-4xl emoji-icon m-1">${item.emoji}</span>`;
+                            document.write(`
+                                <div class="bg-white rounded-2xl overflow-hidden shadow border border-orange-100 flex flex-col group hover:shadow-lg transition-all">
+                                    <div class="bg-orange-100 p-6 flex-grow flex items-center justify-center flex-wrap relative">
+                                        <div class="absolute top-0 right-0 w-8 h-8 bg-orange-200 rounded-bl-full opacity-50"></div>
+                                        ${emojisHtml}
+                                    </div>
+                                    <div class="p-4 bg-white flex flex-col gap-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-bold text-orange-800 flex-grow">ចំនួនសរុប៖</span>
+                                            <input type="number" id="input-${item.id}" class="w-12 h-12 text-center text-xl font-bold rounded-lg border-2 border-orange-200 focus:border-orange-500 outline-none" min="1" max="5">
+                                            <button onclick="checkTyping('${item.id}', ${item.count})" class="bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 px-3 rounded-lg shadow active:scale-95">ផ្ទៀង</button>
+                                        </div>
+                                        <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
+                                    </div>
+                                </div>
+                            `);
+                        });
+                    </script>
+                </div>
+            </section>
+
+            <!-- ប៊ូតុងបញ្ជូនចម្លើយ -->
+            <div class="flex justify-center mt-8">
+                <button id="submit-btn" onclick="submitScore()" class="bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-3">
+                    <span>📤</span> បញ្ជូនចម្លើយទៅកាន់គ្រូ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================================
+        // ១. កន្លែងដាក់ URL របស់ GOOGLE APPS SCRIPT
+        // =====================================================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOjxIyc_uoaI8vTSxKYxxcoAX9azrPaBdkhz9wxpcxwzku25fMT2ujVH2uMgUXe7DO/exec";
+        // =====================================================================
+
+        let studentData = {};
+        let scores = {}; 
+        let currentStudentId = "";
+        let currentStudentName = "";
+
+        // មុខងារទាញយកទិន្នន័យសិស្សពេលបើកទំព័រ
+        window.onload = async function() {
+            const select = document.getElementById('student-select');
+            select.innerHTML = '<option value="">-- កំពុងទាញយកទិន្នន័យ... --</option>';
+            try {
+                if (SCRIPT_URL.includes("សូមដាក់_URL")) throw new Error("No URL");
+                const response = await fetch(SCRIPT_URL + "?action=getStudents");
+                const data = await response.json();
+                
+                select.innerHTML = '<option value="">-- រើសឈ្មោះសិស្ស --</option>';
+                data.forEach(stu => {
+                    studentData[stu.id] = { name: stu.name, photo: stu.photo };
+                    const opt = document.createElement('option');
+                    opt.value = stu.id;
+                    opt.textContent = `${stu.id}: ${stu.name}`;
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.log("កំពុងប្រើប្រាស់ទិន្នន័យសាកល្បង ដោយសារមិនទាន់ដាក់ SCRIPT URL");
+                studentData = {
+                    'ID001': { name: 'សុខ សាន្ត', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sok&backgroundColor=c0aede' },
+                    'ID002': { name: 'ចាន់ ធីតា', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chan&backgroundColor=ffdfbf' }
+                };
+                select.innerHTML = '<option value="">-- រើសឈ្មោះសិស្ស --</option><option value="ID001">ID001: សុខ សាន្ត</option><option value="ID002">ID002: ចាន់ ធីតា</option>';
+            }
+        };
+
+        function onStudentSelect() {
+            const val = document.getElementById('student-select').value;
+            const container = document.getElementById('student-photo-container');
+            const img = document.getElementById('student-photo');
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+
+            if (val && studentData[val]) {
+                currentStudentId = val;
+                currentStudentName = studentData[val].name;
+                img.src = studentData[val].photo;
+                container.classList.remove('hidden');
+                
+                toastMsg.textContent = `ទាញយកទិន្នន័យ "${studentData[val].name}" ពី Google Sheets ជោគជ័យ!`;
+                toast.classList.remove('hidden');
+                toast.classList.add('toast-enter');
+                setTimeout(() => {
+                    toast.classList.remove('toast-enter');
+                    toast.classList.add('hidden');
+                }, 3500);
+            } else {
+                container.classList.add('hidden');
+                currentStudentId = "";
+                currentStudentName = "";
+            }
+        }
+
+        // ២. មុខងារផ្ទៀងផ្ទាត់ការវាយលេខ
+        function toKhmerNum(numStr) {
+            const khmerNums = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+            return numStr.toString().split('').map(digit => khmerNums[digit] || digit).join('');
+        }
+
+        function checkTyping(id, correctAns) {
+            const inputVal = document.getElementById('input-' + id).value;
+            const feedEl = document.getElementById('feed-' + id);
+            
+            if (inputVal === '') return;
+
+            const isCorrect = (inputVal == correctAns || inputVal == toKhmerNum(correctAns));
+            
+            if (isCorrect) {
+                scores[id] = 1;
+                feedEl.textContent = "✅ ត្រឹមត្រូវ";
+                feedEl.className = "h-6 text-sm font-bold text-center w-full text-green-600 drop-shadow-sm";
+            } else {
+                scores[id] = 0;
+                feedEl.textContent = "❌ សូមព្យាយាមម្តងទៀត";
+                feedEl.className = "h-6 text-sm font-bold text-center w-full text-red-500";
+                setTimeout(() => { if(feedEl.textContent.includes('❌')) feedEl.textContent = ""; }, 2500);
+            }
+        }
+
+        // ៣. មុខងារអូសទាញ (Drag and Drop)
+        const draggables = document.querySelectorAll('.draggable');
+        const droppables = document.querySelectorAll('.droppable');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', (e) => {
+                draggable.classList.add('dragging', 'opacity-50', 'scale-90');
+                e.dataTransfer.setData('text/plain', draggable.getAttribute('data-value')); 
+            });
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging', 'opacity-50', 'scale-90');
+            });
+            draggable.addEventListener('touchstart', handleTouchStart, {passive: false});
+            draggable.addEventListener('touchmove', handleTouchMove, {passive: false});
+            draggable.addEventListener('touchend', handleTouchEnd);
+        });
+
+        droppables.forEach(droppable => {
+            droppable.addEventListener('dragover', e => { e.preventDefault(); droppable.classList.add('drag-over'); });
+            droppable.addEventListener('dragleave', () => { droppable.classList.remove('drag-over'); });
+            droppable.addEventListener('drop', e => {
+                e.preventDefault();
+                droppable.classList.remove('drag-over');
+                const draggedValue = e.dataTransfer.getData('text/plain');
+                if (draggedValue) {
+                    processDropByValue(draggedValue, droppable);
+                } else {
+                    const draggable = document.querySelector('.dragging');
+                    if (draggable) processDropByValue(draggable.getAttribute('data-value'), droppable);
+                }
+            });
+        });
+
+        function processDropByValue(value, droppable) {
+            const correctAnswer = droppable.getAttribute('data-answer');
+            const feedbackEl = document.getElementById('feed-' + droppable.id);
+
+            droppable.textContent = toKhmerNum(value);
+            
+            if (value === correctAnswer) {
+                scores[droppable.id] = 1;
+                droppable.classList.remove('border-red-400', 'border-a78bfa');
+                droppable.classList.add('border-green-500', 'bg-green-100', 'text-green-700');
+                feedbackEl.textContent = "✅ ត្រឹមត្រូវ";
+                feedbackEl.className = "h-6 text-sm font-bold text-center w-full text-green-600";
+            } else {
+                scores[droppable.id] = 0;
+                droppable.classList.remove('border-green-500', 'bg-green-100', 'border-a78bfa');
+                droppable.classList.add('border-red-400', 'bg-red-50', 'text-red-600');
+                feedbackEl.textContent = "❌ សូមព្យាយាមម្តងទៀត";
+                feedbackEl.className = "h-6 text-sm font-bold text-center w-full text-red-500";
+                
+                setTimeout(() => {
+                    droppable.textContent = '';
+                    droppable.className = 'droppable w-16 h-16 bg-white';
+                    if(feedbackEl.textContent.includes('❌')) feedbackEl.textContent = '';
+                }, 2000);
+            }
+        }
+
+        // ការគាំទ្រការអូសទាញលើទូរស័ព្ទ (Touch Event)
+        let touchElement = null, originalParent = null, originalNextSibling = null;
+        function handleTouchStart(e) {
+            touchElement = e.target;
+            originalParent = touchElement.parentNode;
+            originalNextSibling = touchElement.nextSibling;
+            touchElement.classList.add('dragging', 'opacity-80');
+            touchElement.style.position = 'fixed';
+            touchElement.style.zIndex = '1000';
+            moveElementToTouch(e.touches[0]);
+        }
+        function handleTouchMove(e) {
+            if (!touchElement) return;
+            e.preventDefault(); 
+            moveElementToTouch(e.touches[0]);
+        }
+        function moveElementToTouch(touch) {
+            touchElement.style.left = (touch.clientX - touchElement.offsetWidth / 2) + 'px';
+            touchElement.style.top = (touch.clientY - touchElement.offsetHeight / 2) + 'px';
+        }
+        function handleTouchEnd(e) {
+            if (!touchElement) return;
+            const changedTouch = e.changedTouches[0];
+            touchElement.style.display = 'none';
+            const dropTarget = document.elementFromPoint(changedTouch.clientX, changedTouch.clientY);
+            touchElement.style.display = '';
+
+            if (dropTarget) {
+                const actualDroppable = dropTarget.closest('.droppable');
+                if (actualDroppable) processDropByValue(touchElement.getAttribute('data-value'), actualDroppable);
+            }
+
+            touchElement.classList.remove('dragging', 'opacity-80');
+            touchElement.style.position = '';
+            touchElement.style.zIndex = '';
+            touchElement.style.left = '';
+            touchElement.style.top = '';
+            if (originalNextSibling) originalParent.insertBefore(touchElement, originalNextSibling);
+            else originalParent.appendChild(touchElement);
+            touchElement = null;
+        }
+
+        // ៤. មុខងារបញ្ជូនពិន្ទុ
+        async function submitScore() {
+            if (!currentStudentId) {
+                alert("សូមជ្រើសរើសឈ្មោះសិស្សនៅខាងលើជាមុនសិន មុននឹងបញ្ជូនចម្លើយ!");
+                return;
+            }
+            const totalCorrect = Object.values(scores).reduce((a, b) => a + b, 0);
+            const totalQuestions = 20;
+
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>⏳</span> កំពុងបញ្ជូន...';
+            btn.disabled = true;
+
+            try {
+                if (SCRIPT_URL.includes("សូមដាក់_URL")) throw new Error("Not configured");
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'submitScore',
+                        studentId: currentStudentId,
+                        studentName: currentStudentName,
+                        score: totalCorrect,
+                        total: totalQuestions
+                    }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert(`✅ សូមអបអរសាទរ! ឯកសារត្រូវបានបញ្ជូន។ អ្នកទទួលបានពិន្ទុ: ${totalCorrect}/${totalQuestions}`);
+                } else {
+                    throw new Error("Server error");
+                }
+            } catch (e) {
+                if (e.message === "Not configured") {
+                    alert(`[សាកល្បង] ពិន្ទុអ្នកគឺ: ${totalCorrect}/${totalQuestions}\n\n(សូមដាក់ Web App URL ជាមុនសិន ទើបអាចបញ្ជូនទៅ Google Sheets បាន)`);
+                } else {
+                    alert("❌ មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ។ សូមពិនិត្យមើលអ៊ីនធឺណិត ឬសាកល្បងម្តងទៀត!");
+                    console.error(e);
+                }
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
