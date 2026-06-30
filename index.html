@@ -2,7 +2,7 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>លំហាត់គណិតវិទ្យាថ្នាក់ទី១ - មេរៀនទី១</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,6 +12,8 @@
             font-family: 'Hanuman', 'Suwannaphum', sans-serif;
             background-color: #f3e8ff;
             color: #1f2937;
+            /* ការពារការទាញអេក្រង់ផ្តេសផ្តាសលើទូរស័ព្ទ */
+            overscroll-behavior-y: none;
         }
 
         .draggable {
@@ -54,24 +56,29 @@
         .toast-enter {
             animation: slideDown 0.4s ease-out forwards;
         }
+        
+        /* ជំនួយដល់ការអូសទាញលើទូរស័ព្ទដៃ */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
-<body class="p-2 md:p-6 pb-20 relative min-h-screen">
+<body class="p-2 sm:p-4 md:p-6 pb-24 relative min-h-screen">
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 hidden bg-green-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-bold">
+    <div id="toast" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[500] hidden bg-green-500 text-white px-4 py-3 sm:px-6 rounded-full shadow-lg flex items-center gap-2 font-bold max-w-[90vw] text-sm sm:text-base w-max">
         <span>🟢</span> <span id="toast-msg">បានភ្ជាប់ទិន្នន័យពី Google Sheets ជោគជ័យ!</span>
     </div>
 
     <!-- ផ្ទាំងបង្ហាញបញ្ហា Apps Script (សម្រាប់ពេលអត់ PIN) -->
     <div id="script-error-modal" class="fixed inset-0 bg-black/80 z-[200] hidden flex items-center justify-center backdrop-blur-sm p-4">
-        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto border-4 border-red-400 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-2xl font-bold text-red-600 mb-4 flex items-center gap-2">⚠️ បញ្ហាមិនមានលេខសម្ងាត់ (PIN)</h2>
-            <p class="text-gray-700 mb-4">ប្រព័ន្ធរកមិនឃើញលេខសម្ងាត់របស់សិស្សទេ។ នេះមកពី <strong>Google Apps Script</strong> របស់អ្នកមិនទាន់បានអាប់ដេត។ សូមធ្វើតាម ២ ជំហាននេះ៖</p>
+        <div class="bg-white p-4 sm:p-6 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto border-4 border-red-400 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl sm:text-2xl font-bold text-red-600 mb-4 flex items-center gap-2">⚠️ បញ្ហាមិនមានលេខសម្ងាត់ (PIN)</h2>
+            <p class="text-gray-700 mb-4 text-sm sm:text-base">ប្រព័ន្ធរកមិនឃើញលេខសម្ងាត់របស់សិស្សទេ។ នេះមកពី <strong>Google Apps Script</strong> របស់អ្នកមិនទាន់បានអាប់ដេត។ សូមធ្វើតាម ២ ជំហាននេះ៖</p>
             
-            <div class="bg-gray-100 p-4 rounded-xl mb-4 text-left">
-                <h3 class="font-bold text-gray-800 mb-2">ជំហានទី១៖ កូពីកូដនេះទៅដាក់ក្នុង Apps Script របស់អ្នក (ជំនួសកូដចាស់)</h3>
-                <pre class="bg-gray-800 text-green-400 p-3 rounded-lg text-sm overflow-x-auto" dir="ltr"><code>function doGet(e) {
+            <div class="bg-gray-100 p-3 sm:p-4 rounded-xl mb-4 text-left">
+                <h3 class="font-bold text-gray-800 mb-2 text-sm sm:text-base">ជំហានទី១៖ កូពីកូដនេះទៅដាក់ក្នុង Apps Script របស់អ្នក (ជំនួសកូដចាស់)</h3>
+                <pre class="bg-gray-800 text-green-400 p-3 rounded-lg text-xs sm:text-sm overflow-x-auto" dir="ltr"><code>function doGet(e) {
   if (e.parameter.action == "getStudents") {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
     var data = sheet.getDataRange().getValues();
@@ -92,9 +99,9 @@
 }</code></pre>
             </div>
 
-            <div class="bg-blue-50 p-4 rounded-xl mb-6 border border-blue-200 text-left">
-                <h3 class="font-bold text-blue-800 mb-2">ជំហានទី២៖ ធ្វើការ Deploy ជា "New version" (សំខាន់បំផុត!)</h3>
-                <ol class="list-decimal pl-5 text-gray-700 space-y-2">
+            <div class="bg-blue-50 p-3 sm:p-4 rounded-xl mb-6 border border-blue-200 text-left">
+                <h3 class="font-bold text-blue-800 mb-2 text-sm sm:text-base">ជំហានទី២៖ ធ្វើការ Deploy ជា "New version" (សំខាន់បំផុត!)</h3>
+                <ol class="list-decimal pl-5 text-gray-700 space-y-1 sm:space-y-2 text-sm sm:text-base">
                     <li>ចុចប៊ូតុង <strong>Deploy</strong> (ពណ៌ខៀវខាងលើស្តាំ)</li>
                     <li>ជ្រើសរើស <strong>Manage deployments</strong></li>
                     <li>ចុចលើរូប <strong>ខ្មៅដៃ (Edit)</strong> ✏️</li>
@@ -104,36 +111,52 @@
             </div>
 
             <div class="flex justify-center">
-                <button onclick="document.getElementById('script-error-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded-xl transition-colors shadow-sm">យល់ព្រម / បិទ</button>
+                <button onclick="document.getElementById('script-error-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded-xl transition-colors shadow-sm w-full sm:w-auto">យល់ព្រម / បិទ</button>
             </div>
         </div>
     </div>
 
     <!-- ផ្ទាំងបង្ហាញពិន្ទុ (Score Modal) -->
     <div id="score-modal" class="fixed inset-0 bg-black/80 z-[300] hidden flex items-center justify-center backdrop-blur-sm p-4">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm mx-auto border-4 border-yellow-400 text-center transform transition-all">
-            <div class="text-6xl mb-4">🎉</div>
-            <h2 class="text-3xl font-bold text-purple-700 mb-2">អបអរសាទរ!</h2>
-            <p class="text-gray-600 mb-6 font-bold">ឯកសារត្រូវបានបញ្ជូនទៅគ្រូ</p>
-            <div class="bg-yellow-50 rounded-2xl p-6 mb-6 border-2 border-yellow-200">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-sm mx-auto border-4 border-yellow-400 text-center transform transition-all">
+            <div class="text-5xl sm:text-6xl mb-4">🎉</div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-purple-700 mb-2">អបអរសាទរ!</h2>
+            <p class="text-gray-600 mb-6 font-bold text-sm sm:text-base">ឯកសារត្រូវបានបញ្ជូនទៅគ្រូ</p>
+            <div class="bg-yellow-50 rounded-2xl p-4 sm:p-6 mb-6 border-2 border-yellow-200">
                 <p class="text-gray-500 font-bold mb-2">ពិន្ទុរបស់អ្នកគឺ៖</p>
-                <div class="text-5xl font-extrabold text-yellow-600 flex justify-center items-baseline gap-2">
-                    <span id="final-score-value">០</span> <span class="text-2xl text-yellow-500">/ ២០</span>
+                <div class="text-4xl sm:text-5xl font-extrabold text-yellow-600 flex justify-center items-baseline gap-2">
+                    <span id="final-score-value">០</span> <span class="text-xl sm:text-2xl text-yellow-500">/ ២០</span>
                 </div>
             </div>
-            <button onclick="closeScoreModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-purple-200 w-full text-xl">យល់ព្រម / បិទ</button>
+            <button onclick="closeScoreModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-purple-200 w-full text-lg sm:text-xl">យល់ព្រម / បិទ</button>
+        </div>
+    </div>
+
+    <!-- ផ្ទាំងសម្រាប់បញ្ចូលលេខសម្ងាត់គ្រូ (Teacher PIN Modal) -->
+    <div id="teacher-pin-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm mx-auto border-4 border-purple-400 text-center relative">
+            <div class="text-5xl mb-4">👨‍🏫</div>
+            <h2 class="text-xl font-bold text-purple-700 mb-2">ផ្ទាំងសុវត្ថិភាពសម្រាប់គ្រូ</h2>
+            <p class="text-sm text-gray-500 mb-4">សូមបញ្ចូលលេខសម្ងាត់ (PIN) ដើម្បីបន្ត៖</p>
+            
+            <input type="password" id="teacher-pin-input" class="w-full text-center text-3xl font-bold rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none p-3 mb-6 tracking-widest text-purple-700" placeholder="••••" onkeypress="handleTeacherPinEnter(event)">
+            
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                <button onclick="closeTeacherPinModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm w-full sm:w-1/2">បោះបង់</button>
+                <button onclick="verifyTeacherPinAction()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-purple-200 w-full sm:w-1/2 border-2 border-purple-700">យល់ព្រម</button>
+            </div>
         </div>
     </div>
 
     <!-- ផ្ទាំងសម្រាប់គ្រូ (Teacher Modal) -->
     <div id="teacher-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm p-4">
-        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-lg mx-auto border-4 border-purple-400">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="text-2xl font-bold text-purple-700 flex items-center gap-2">👨‍🏫 ផ្ទាំងគ្រប់គ្រងសម្រាប់គ្រូ</h2>
-                <button onclick="closeTeacherModal()" class="text-gray-400 hover:text-red-500 text-3xl transition-colors">&times;</button>
+        <div class="bg-white p-4 sm:p-6 rounded-3xl shadow-2xl w-full max-w-lg mx-auto border-4 border-purple-400 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 sm:mb-6 border-b pb-3 sm:pb-4 flex-shrink-0">
+                <h2 class="text-xl sm:text-2xl font-bold text-purple-700 flex items-center gap-2">👨‍🏫 ផ្ទាំងគ្រប់គ្រងសម្រាប់គ្រូ</h2>
+                <button onclick="closeTeacherModal()" class="text-gray-400 hover:text-red-500 text-2xl sm:text-3xl transition-colors">&times;</button>
             </div>
-            <p class="text-gray-600 mb-4 font-bold">សិស្សដែលបានធ្វើលំហាត់រួចរាល់៖</p>
-            <div id="completed-students-list" class="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
+            <p class="text-gray-600 mb-4 font-bold text-sm sm:text-base flex-shrink-0">សិស្សដែលបានធ្វើលំហាត់រួចរាល់៖</p>
+            <div id="completed-students-list" class="space-y-3 overflow-y-auto pr-2 flex-grow h-auto max-h-[60vh]">
                 <!-- បញ្ជីសិស្សនឹងបង្ហាញនៅទីនេះ -->
             </div>
         </div>
@@ -141,70 +164,73 @@
 
     <!-- ផ្ទាំងសុវត្ថិភាពសិស្ស (បញ្ចូល ID) -->
     <div id="student-auth-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm p-4">
-        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm mx-auto border-4 border-purple-400 text-center relative">
-            <h2 class="text-xl font-bold text-purple-700 mb-4">សូមវាយលេខសម្ងាត់ (ID)</h2>
-            <img id="auth-student-photo" src="" class="w-20 h-20 rounded-full mx-auto mb-2 object-cover border-4 border-purple-200 bg-gray-100">
-            <p id="auth-student-name" class="font-bold text-gray-700 mb-4 text-lg"></p>
+        <div class="bg-white p-4 sm:p-6 rounded-3xl shadow-2xl w-full max-w-sm mx-auto border-4 border-purple-400 text-center relative max-h-[95vh] overflow-y-auto">
+            <h2 class="text-lg sm:text-xl font-bold text-purple-700 mb-4">សូមវាយលេខសម្ងាត់ (ID)</h2>
+            <img id="auth-student-photo" src="" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 object-cover border-4 border-purple-200 bg-gray-100">
+            <p id="auth-student-name" class="font-bold text-gray-700 mb-4 text-base sm:text-lg"></p>
             
-            <p class="text-sm text-gray-500 mb-2">បញ្ជាក់៖ អាចវាយជាលេខអង់គ្លេស ឬខ្មែរក៏បាន</p>
-            <input type="text" id="auth-pin-input" class="w-full text-center text-3xl font-bold rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none p-3 mb-4 tracking-widest text-purple-700" placeholder="វាយលេខទីនេះ" onkeypress="handlePinEnter(event)">
+            <p class="text-xs sm:text-sm text-gray-500 mb-2">បញ្ជាក់៖ អាចវាយជាលេខអង់គ្លេស ឬខ្មែរក៏បាន</p>
+            <input type="text" inputmode="numeric" id="auth-pin-input" class="w-full text-center text-2xl sm:text-3xl font-bold rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none p-3 mb-4 tracking-widest text-purple-700" placeholder="វាយលេខទីនេះ" onkeypress="handlePinEnter(event)">
             
-            <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-r-lg mb-6 shadow-sm text-left text-sm text-red-700 leading-relaxed">
+            <div class="bg-red-50 border-l-4 border-red-500 p-2 sm:p-3 rounded-r-lg mb-4 sm:mb-6 shadow-sm text-left text-xs sm:text-sm text-red-700 leading-relaxed">
                 ⚠️ <span class="font-bold">ចំណាំ៖</span> សូមកូនផ្ទៀងផ្ទាត់ឱ្យបានច្បាស់លាស់មុននឹងវាយបញ្ចូល ឬទាញលេខយកទៅដាក់ ព្រោះពេលដាក់ហើយ មិនអាចកែប្រែវិញបានទេ!
             </div>
             
-            <div class="flex gap-4 justify-center">
-                <button onclick="cancelAuth()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm w-1/2">បោះបង់</button>
-                <button onclick="verifyStudentPin()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-purple-200 w-1/2 border-2 border-purple-700">ចូលរួម</button>
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                <button onclick="cancelAuth()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm w-full sm:w-1/2">បោះបង់</button>
+                <button onclick="verifyStudentPin()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-purple-200 w-full sm:w-1/2 border-2 border-purple-700">ចូលរួម</button>
             </div>
         </div>
     </div>
 
     <!-- ប៊ូតុងចូលផ្ទាំងគ្រូ -->
-    <button onclick="openTeacherModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-purple-600 text-white rounded-full shadow-2xl hover:bg-purple-700 transition-transform hover:scale-110 flex items-center justify-center text-2xl z-40 border-2 border-white" title="សម្រាប់គ្រូ">
+    <button onclick="openTeacherModal()" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-purple-600 text-white rounded-full shadow-2xl hover:bg-purple-700 transition-transform hover:scale-110 flex items-center justify-center text-xl sm:text-2xl z-40 border-2 border-white" title="សម្រាប់គ្រូ">
         👨‍🏫
     </button>
 
-    <div class="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-purple-300">
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden border-2 sm:border-4 border-purple-300">
         
         <!-- Header -->
-        <header class="bg-purple-600 p-4 md:p-6 text-white flex flex-col md:flex-row justify-between items-center gap-6 relative shadow-md">
-            <div class="flex items-center gap-4">
-                <div class="w-20 h-20 bg-white rounded-full flex flex-col items-center justify-center overflow-hidden border-4 border-purple-300 shadow-inner flex-shrink-0">
+        <header class="bg-purple-600 p-4 md:p-6 text-white flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 relative shadow-md">
+            <div class="flex items-center gap-3 sm:gap-4 w-full md:w-auto justify-center md:justify-start">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex flex-col items-center justify-center overflow-hidden border-2 sm:border-4 border-purple-300 shadow-inner flex-shrink-0">
                     <img id="school-logo" src="https://lh3.googleusercontent.com/d/1Gx6xmt-xXf6EkgmXWkUp6r9eLnULAZWl" alt="Logo សាលា" class="w-full h-full object-contain p-1">
                 </div>
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-bold mb-1 drop-shadow-md">គណិតវិទ្យា ថ្នាក់ទី១</h1>
-                    <h2 class="text-lg md:text-xl text-purple-200">មេរៀនទី១ ៖ ចំនួន ១ ដល់ ៥ <span class="bg-purple-800 text-xs px-2 py-1 rounded-full ml-2">២០ លំហាត់</span></h2>
+                <div class="text-center md:text-left">
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-bold mb-1 drop-shadow-md">គណិតវិទ្យា ថ្នាក់ទី១</h1>
+                    <h2 class="text-sm sm:text-base md:text-xl text-purple-200 flex flex-wrap items-center justify-center md:justify-start gap-2">
+                        មេរៀនទី១ ៖ ចំនួន ១ ដល់ ៥ 
+                        <span class="bg-purple-800 text-xs px-2 py-1 rounded-full whitespace-nowrap">២០ លំហាត់</span>
+                    </h2>
                 </div>
             </div>
 
-            <div class="bg-purple-500/50 p-3 rounded-2xl border border-purple-400 flex items-center gap-4 backdrop-blur-sm shadow-inner">
-                <div class="flex flex-col">
+            <div class="bg-purple-500/50 p-2 sm:p-3 rounded-2xl border border-purple-400 flex items-center justify-between md:justify-end gap-3 sm:gap-4 backdrop-blur-sm shadow-inner w-full md:w-auto">
+                <div class="flex flex-col flex-grow md:flex-grow-0">
                     <label for="student-select" class="text-xs text-purple-100 mb-1 flex items-center gap-1">
                         <svg class="w-3 h-3 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
                         ជ្រើសរើសសិស្ស
                     </label>
-                    <select id="student-select" onchange="onStudentSelect()" class="text-gray-800 p-2 rounded-lg outline-none font-bold bg-white border-2 border-purple-300 focus:border-purple-500 cursor-pointer min-w-[150px]">
+                    <select id="student-select" onchange="onStudentSelect()" class="text-gray-800 p-2 rounded-lg outline-none font-bold bg-white border-2 border-purple-300 focus:border-purple-500 cursor-pointer w-full md:min-w-[180px] text-sm sm:text-base">
                         <option value="">-- រើសឈ្មោះសិស្ស --</option>
                     </select>
                 </div>
-                <div id="student-photo-container" class="w-14 h-14 bg-white rounded-full overflow-hidden hidden border-4 border-green-400 shadow-md flex-shrink-0 transition-transform transform hover:scale-110">
+                <div id="student-photo-container" class="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-full overflow-hidden hidden border-2 sm:border-4 border-green-400 shadow-md flex-shrink-0 transition-transform transform hover:scale-110">
                     <img id="student-photo" src="" alt="Student Photo" class="w-full h-full object-cover bg-gray-100">
                 </div>
             </div>
         </header>
 
         <!-- ផ្នែកលំហាត់ (ត្រូវបានលាក់រហូតទាល់តែបញ្ជាក់ ID ត្រូវ) -->
-        <div id="exercise-section" class="p-4 md:p-8 space-y-10 hidden">
+        <div id="exercise-section" class="p-3 sm:p-4 md:p-8 space-y-6 sm:space-y-10 hidden">
             
             <!-- ផ្នែកទី១: វាយលេខបញ្ចូល -->
-            <section class="bg-pink-50 p-4 md:p-6 rounded-2xl border-2 border-pink-200 shadow-sm relative">
-                <div class="absolute -top-4 left-6 bg-pink-500 text-white px-4 py-1 rounded-full font-bold shadow-md">ផ្នែកទី១ (៧ ចំណុច)</div>
-                <h3 class="text-xl font-bold text-pink-800 mt-2 mb-6 flex items-center gap-2">
-                    <span class="text-2xl">⌨️</span> ចូរសរសេរលេខឱ្យត្រូវនឹងចំនួនរូបភាពខាងក្រោម៖
+            <section class="bg-pink-50 p-4 md:p-6 rounded-2xl border-2 border-pink-200 shadow-sm relative mt-4 sm:mt-0">
+                <div class="absolute -top-4 left-4 sm:left-6 bg-pink-500 text-white px-3 sm:px-4 py-1 rounded-full text-sm sm:text-base font-bold shadow-md">ផ្នែកទី១ (៧ ចំណុច)</div>
+                <h3 class="text-lg sm:text-xl font-bold text-pink-800 mt-2 mb-4 sm:mb-6 flex items-start sm:items-center gap-2">
+                    <span class="text-xl sm:text-2xl mt-1 sm:mt-0">⌨️</span> <span>ចូរសរសេរលេខឱ្យត្រូវនឹងចំនួនរូបភាពខាងក្រោម៖</span>
                 </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     <script>
                         const q1_data = [
                             {id: 'q1', emoji: '🍎', count: 3}, {id: 'q2', emoji: '🚗', count: 2},
@@ -214,15 +240,15 @@
                         ];
                         q1_data.forEach(item => {
                             let emojisHtml = '';
-                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-3xl emoji-icon inline-block m-1 hover:scale-125 transition-transform">${item.emoji}</span>`;
+                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-2xl sm:text-3xl emoji-icon inline-block m-0.5 sm:m-1 hover:scale-125 transition-transform">${item.emoji}</span>`;
                             document.write(`
-                                <div class="bg-white p-4 rounded-xl shadow-sm border border-pink-100 flex flex-col items-center justify-between gap-3 hover:shadow-md transition-shadow">
-                                    <div class="bg-pink-50 w-full min-h-[80px] rounded-lg flex flex-wrap items-center justify-center p-2 mb-2 border border-pink-100">${emojisHtml}</div>
+                                <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-pink-100 flex flex-col items-center justify-between gap-2 sm:gap-3 hover:shadow-md transition-shadow">
+                                    <div class="bg-pink-50 w-full min-h-[70px] sm:min-h-[80px] rounded-lg flex flex-wrap items-center justify-center p-2 mb-1 sm:mb-2 border border-pink-100">${emojisHtml}</div>
                                     <div class="flex items-center gap-2 w-full justify-center">
-                                        <span class="text-xl font-bold text-gray-400">=</span>
-                                        <input type="text" inputmode="numeric" id="input-${item.id}" class="w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 border-gray-300 focus:border-pink-500 outline-none text-pink-600" maxlength="1" oninput="handleTyping(this, '${item.id}', ${item.count})">
+                                        <span class="text-lg sm:text-xl font-bold text-gray-400">=</span>
+                                        <input type="text" inputmode="numeric" id="input-${item.id}" class="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-lg border-2 border-gray-300 focus:border-pink-500 outline-none text-pink-600 transition-colors" maxlength="1" oninput="handleTyping(this, '${item.id}', ${item.count})">
                                     </div>
-                                    <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
+                                    <div id="feed-${item.id}" class="h-5 sm:h-6 text-xs sm:text-sm font-bold text-center w-full"></div>
                                 </div>
                             `);
                         });
@@ -231,19 +257,19 @@
             </section>
 
             <!-- ផ្នែកទី២: ទាញលេខដាក់ -->
-            <section class="bg-blue-50 p-4 md:p-6 rounded-2xl border-2 border-blue-200 shadow-sm relative">
-                <div class="absolute -top-4 left-6 bg-blue-500 text-white px-4 py-1 rounded-full font-bold shadow-md">ផ្នែកទី២ (៦ ចំណុច)</div>
-                <h3 class="text-xl font-bold text-blue-800 mt-2 mb-4 flex items-center gap-2">
-                    <span class="text-2xl">👆</span> ចូរទាញលេខពីខាងលើ ទៅដាក់ក្នុងប្រអប់ខាងក្រោម៖
+            <section class="bg-blue-50 p-4 md:p-6 rounded-2xl border-2 border-blue-200 shadow-sm relative mt-6 sm:mt-0">
+                <div class="absolute -top-4 left-4 sm:left-6 bg-blue-500 text-white px-3 sm:px-4 py-1 rounded-full text-sm sm:text-base font-bold shadow-md">ផ្នែកទី២ (៦ ចំណុច)</div>
+                <h3 class="text-lg sm:text-xl font-bold text-blue-800 mt-2 mb-3 sm:mb-4 flex items-start sm:items-center gap-2">
+                    <span class="text-xl sm:text-2xl mt-1 sm:mt-0">👆</span> <span>ចូរទាញលេខពីខាងលើ ទៅដាក់ក្នុងប្រអប់ខាងក្រោម៖</span>
                 </h3>
-                <div class="bg-white/80 p-3 rounded-xl border border-blue-200 flex justify-center gap-2 sm:gap-4 flex-wrap mb-6 sticky top-2 z-10 backdrop-blur shadow-sm">
-                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="1">១</div>
-                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="2">២</div>
-                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="3">៣</div>
-                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="4">៤</div>
-                    <div class="draggable bg-blue-100 w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700" draggable="true" data-value="5">៥</div>
+                <div class="bg-white/90 p-2 sm:p-3 rounded-xl border border-blue-200 flex justify-center gap-2 sm:gap-4 flex-wrap mb-4 sm:mb-6 sticky top-1 sm:top-2 z-10 backdrop-blur shadow-sm">
+                    <div class="draggable bg-blue-100 w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-bold text-blue-700" draggable="true" data-value="1">១</div>
+                    <div class="draggable bg-blue-100 w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-bold text-blue-700" draggable="true" data-value="2">២</div>
+                    <div class="draggable bg-blue-100 w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-bold text-blue-700" draggable="true" data-value="3">៣</div>
+                    <div class="draggable bg-blue-100 w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-bold text-blue-700" draggable="true" data-value="4">៤</div>
+                    <div class="draggable bg-blue-100 w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl shadow-sm border-2 border-blue-400 flex items-center justify-center text-xl sm:text-2xl md:text-3xl font-bold text-blue-700" draggable="true" data-value="5">៥</div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <script>
                         const q2_data = [
                             {id: 'd1', emoji: '🐶', count: 2}, {id: 'd2', emoji: '⭐', count: 4},
@@ -252,15 +278,15 @@
                         ];
                         q2_data.forEach(item => {
                             let emojisHtml = '';
-                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-4xl emoji-icon m-1 hover:-translate-y-1 transition-transform inline-block">${item.emoji}</span>`;
+                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-3xl sm:text-4xl emoji-icon m-0.5 sm:m-1 hover:-translate-y-1 transition-transform inline-block">${item.emoji}</span>`;
                             document.write(`
-                                <div class="bg-white p-5 rounded-2xl shadow-sm border-b-4 border-blue-200 flex flex-col items-center justify-center gap-4 hover:border-blue-400 transition-colors">
-                                    <div class="flex flex-wrap justify-center min-h-[60px]">${emojisHtml}</div>
-                                    <div class="flex items-center gap-4 bg-blue-50 p-2 rounded-xl w-full justify-center border border-blue-100">
-                                        <span class="text-2xl font-bold text-blue-300">=</span>
-                                        <div class="droppable w-16 h-16 bg-white" data-answer="${item.count}" id="${item.id}"></div>
+                                <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border-b-4 border-blue-200 flex flex-col items-center justify-center gap-3 sm:gap-4 hover:border-blue-400 transition-colors">
+                                    <div class="flex flex-wrap justify-center min-h-[50px] sm:min-h-[60px]">${emojisHtml}</div>
+                                    <div class="flex items-center gap-3 sm:gap-4 bg-blue-50 p-2 rounded-xl w-full justify-center border border-blue-100">
+                                        <span class="text-xl sm:text-2xl font-bold text-blue-300">=</span>
+                                        <div class="droppable w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white" data-answer="${item.count}" id="${item.id}"></div>
                                     </div>
-                                    <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
+                                    <div id="feed-${item.id}" class="h-5 sm:h-6 text-xs sm:text-sm font-bold text-center w-full"></div>
                                 </div>
                             `);
                         });
@@ -269,12 +295,12 @@
             </section>
 
             <!-- ផ្នែកទី៣: រូបភាព និងប្រអប់បញ្ចូល -->
-            <section class="bg-orange-50 p-4 md:p-6 rounded-2xl border-2 border-orange-200 shadow-sm relative">
-                <div class="absolute -top-4 left-6 bg-orange-500 text-white px-4 py-1 rounded-full font-bold shadow-md">ផ្នែកទី៣ (៧ ចំណុច)</div>
-                <h3 class="text-xl font-bold text-orange-800 mt-2 mb-6 flex items-center gap-2">
-                    <span class="text-2xl">🖼️</span> ចូររាប់ចំនួនរូបភាព រួចសរសេរលេខចូលក្នុងប្រអប់៖
+            <section class="bg-orange-50 p-4 md:p-6 rounded-2xl border-2 border-orange-200 shadow-sm relative mt-6 sm:mt-0">
+                <div class="absolute -top-4 left-4 sm:left-6 bg-orange-500 text-white px-3 sm:px-4 py-1 rounded-full text-sm sm:text-base font-bold shadow-md">ផ្នែកទី៣ (៧ ចំណុច)</div>
+                <h3 class="text-lg sm:text-xl font-bold text-orange-800 mt-2 mb-4 sm:mb-6 flex items-start sm:items-center gap-2">
+                    <span class="text-xl sm:text-2xl mt-1 sm:mt-0">🖼️</span> <span>ចូររាប់ចំនួនរូបភាព រួចសរសេរលេខចូលក្នុងប្រអប់៖</span>
                 </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <div class="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                     <script>
                         const q3_data = [
                             {id: 'b1', emoji: '🦆', count: 5}, {id: 'b2', emoji: '🐢', count: 2},
@@ -284,19 +310,19 @@
                         ];
                         q3_data.forEach(item => {
                             let emojisHtml = '';
-                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-4xl emoji-icon m-1">${item.emoji}</span>`;
+                            for(let i=0; i<item.count; i++) emojisHtml += `<span class="text-3xl sm:text-4xl emoji-icon m-0.5 sm:m-1">${item.emoji}</span>`;
                             document.write(`
                                 <div class="bg-white rounded-2xl overflow-hidden shadow border border-orange-100 flex flex-col group hover:shadow-lg transition-all">
-                                    <div class="bg-orange-100 p-6 flex-grow flex items-center justify-center flex-wrap relative">
-                                        <div class="absolute top-0 right-0 w-8 h-8 bg-orange-200 rounded-bl-full opacity-50"></div>
+                                    <div class="bg-orange-100 p-4 sm:p-6 flex-grow flex items-center justify-center flex-wrap relative min-h-[80px]">
+                                        <div class="absolute top-0 right-0 w-6 h-6 sm:w-8 sm:h-8 bg-orange-200 rounded-bl-full opacity-50"></div>
                                         ${emojisHtml}
                                     </div>
-                                    <div class="p-4 bg-white flex flex-col gap-2">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm font-bold text-orange-800 flex-grow">ចំនួនសរុប៖</span>
-                                            <input type="text" inputmode="numeric" id="input-${item.id}" class="w-12 h-12 text-center text-xl font-bold rounded-lg border-2 border-orange-200 focus:border-orange-500 outline-none text-orange-600" maxlength="1" oninput="handleTyping(this, '${item.id}', ${item.count})">
+                                    <div class="p-3 sm:p-4 bg-white flex flex-col gap-2">
+                                        <div class="flex items-center gap-2 justify-between">
+                                            <span class="text-xs sm:text-sm font-bold text-orange-800 flex-grow">ចំនួនសរុប៖</span>
+                                            <input type="text" inputmode="numeric" id="input-${item.id}" class="w-10 h-10 sm:w-12 sm:h-12 text-center text-lg sm:text-xl font-bold rounded-lg border-2 border-orange-200 focus:border-orange-500 outline-none text-orange-600 transition-colors" maxlength="1" oninput="handleTyping(this, '${item.id}', ${item.count})">
                                         </div>
-                                        <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
+                                        <div id="feed-${item.id}" class="h-5 sm:h-6 text-xs sm:text-sm font-bold text-center w-full"></div>
                                     </div>
                                 </div>
                             `);
@@ -306,8 +332,8 @@
             </section>
 
             <!-- ប៊ូតុងបញ្ជូនចម្លើយ -->
-            <div class="flex justify-center mt-8">
-                <button id="submit-btn" onclick="submitScore()" class="bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-3">
+            <div class="flex justify-center mt-6 sm:mt-8 pt-4">
+                <button id="submit-btn" onclick="submitScore()" class="bg-green-500 hover:bg-green-600 text-white text-lg sm:text-xl font-bold py-3 sm:py-4 px-8 sm:px-12 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-center">
                     <span>📤</span> បញ្ជូនចម្លើយទៅកាន់គ្រូ
                 </button>
             </div>
@@ -427,6 +453,8 @@
             if (event.key === 'Enter' || event.keyCode === 13) {
                 event.preventDefault();
                 verifyStudentPin();
+                // លាក់ Keyboard ទូរស័ព្ទ
+                document.getElementById('auth-pin-input').blur(); 
             }
         }
 
@@ -490,11 +518,31 @@
         // មុខងារសម្រាប់គ្រូ (Teacher Panel)
         // =====================================================================
         function openTeacherModal() {
-            const pin = prompt("សូមបញ្ចូលលេខសម្ងាត់សម្រាប់គ្រូ (PIN):");
+            const pinInput = document.getElementById('teacher-pin-input');
+            pinInput.value = ''; // សម្អាតប្រអប់បញ្ចូល
+            document.getElementById('teacher-pin-modal').classList.remove('hidden');
+            setTimeout(() => pinInput.focus(), 100); // ផ្តោតទៅលើប្រអប់វាយលេខដោយស្វ័យប្រវត្តិ
+        }
+
+        function closeTeacherPinModal() {
+            document.getElementById('teacher-pin-modal').classList.add('hidden');
+        }
+
+        function handleTeacherPinEnter(event) {
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                event.preventDefault();
+                verifyTeacherPinAction();
+                document.getElementById('teacher-pin-input').blur();
+            }
+        }
+
+        function verifyTeacherPinAction() {
+            const pin = document.getElementById('teacher-pin-input').value;
             if (pin === TEACHER_PIN) {
+                closeTeacherPinModal();
                 renderCompletedStudents();
                 document.getElementById('teacher-modal').classList.remove('hidden');
-            } else if (pin !== null) {
+            } else {
                 alert("❌ លេខសម្ងាត់មិនត្រឹមត្រូវ!");
             }
         }
@@ -513,13 +561,13 @@
                 if (stu.completed) {
                     hasCompleted = true;
                     list.innerHTML += `
-                        <div class="flex items-center justify-between bg-purple-50 p-3 rounded-xl border border-purple-100">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-purple-50 p-3 rounded-xl border border-purple-100 gap-3">
                             <div class="flex items-center gap-3">
-                                <img src="${stu.photo}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${id}'">
-                                <span class="font-bold text-gray-700">${id}: ${stu.name}</span>
+                                <img src="${stu.photo}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-sm" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${id}'">
+                                <span class="font-bold text-gray-700 text-sm sm:text-base">${id}: ${stu.name}</span>
                             </div>
-                            <button onclick="allowRetake('${id}', this)" class="bg-red-100 text-red-600 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm shadow-sm active:scale-95">
-                                🔄 អនុញ្ញាត
+                            <button onclick="allowRetake('${id}', this)" class="bg-red-100 text-red-600 hover:bg-red-500 hover:text-white px-3 sm:px-4 py-2 rounded-lg font-bold transition-colors text-xs sm:text-sm shadow-sm active:scale-95 whitespace-nowrap w-full sm:w-auto text-center">
+                                🔄 អនុញ្ញាតឡើងវិញ
                             </button>
                         </div>
                     `;
@@ -527,7 +575,7 @@
             });
 
             if (!hasCompleted) {
-                list.innerHTML = '<p class="text-center text-gray-500 italic py-6">មិនទាន់មានសិស្សណាម្នាក់ធ្វើរួចទេ</p>';
+                list.innerHTML = '<p class="text-center text-gray-500 italic py-6 text-sm sm:text-base">មិនទាន់មានសិស្សណាម្នាក់ធ្វើរួចទេ</p>';
             }
         }
 
@@ -573,6 +621,8 @@
             convertToKhmer(inputEl);
             if (inputEl.value !== '') {
                 checkTyping(id, correctAns);
+                // ផ្តាច់ការវាយភ្លាមៗពេលវាយរួច (សម្រាប់ទូរស័ព្ទដៃ)
+                inputEl.blur();
             }
         }
 
@@ -589,14 +639,14 @@
             if (isCorrect) {
                 scores[id] = 1;
                 feedEl.textContent = "✅ ត្រឹមត្រូវ";
-                feedEl.className = "h-6 text-sm font-bold text-center w-full text-green-600 drop-shadow-sm";
+                feedEl.className = "h-5 sm:h-6 text-xs sm:text-sm font-bold text-center w-full text-green-600 drop-shadow-sm";
                 inputEl.classList.replace('border-gray-300', 'border-green-500');
                 inputEl.classList.replace('border-orange-200', 'border-green-500');
                 inputEl.classList.add('bg-green-50', 'text-green-700');
             } else {
                 scores[id] = 0;
                 feedEl.textContent = "❌ ខុសហើយ";
-                feedEl.className = "h-6 text-sm font-bold text-center w-full text-red-500";
+                feedEl.className = "h-5 sm:h-6 text-xs sm:text-sm font-bold text-center w-full text-red-500";
                 inputEl.classList.replace('border-gray-300', 'border-red-400');
                 inputEl.classList.replace('border-orange-200', 'border-red-400');
                 inputEl.classList.add('bg-red-50', 'text-red-600');
@@ -640,6 +690,9 @@
         });
 
         function processDropByValue(value, droppable) {
+            // បើមានទិន្នន័យ (លេខ) នៅក្នុងប្រអប់រួចហើយ គឺមិនអនុញ្ញាតឱ្យដាក់ចូលទៀតទេ
+            if (droppable.textContent !== '') return;
+
             const correctAnswer = droppable.getAttribute('data-answer');
             const feedbackEl = document.getElementById('feed-' + droppable.id);
 
@@ -650,20 +703,17 @@
                 droppable.classList.remove('border-red-400', 'border-a78bfa');
                 droppable.classList.add('border-green-500', 'bg-green-100', 'text-green-700');
                 feedbackEl.textContent = "✅ ត្រឹមត្រូវ";
-                feedbackEl.className = "h-6 text-sm font-bold text-center w-full text-green-600";
+                feedbackEl.className = "h-5 sm:h-6 text-xs sm:text-sm font-bold text-center w-full text-green-600";
             } else {
                 scores[droppable.id] = 0;
                 droppable.classList.remove('border-green-500', 'bg-green-100', 'border-a78bfa');
                 droppable.classList.add('border-red-400', 'bg-red-50', 'text-red-600');
-                feedbackEl.textContent = "❌ សូមព្យាយាមម្តងទៀត";
-                feedbackEl.className = "h-6 text-sm font-bold text-center w-full text-red-500";
-                
-                setTimeout(() => {
-                    droppable.textContent = '';
-                    droppable.className = 'droppable w-16 h-16 bg-white';
-                    if(feedbackEl.textContent.includes('❌')) feedbackEl.textContent = '';
-                }, 2000);
+                feedbackEl.textContent = "❌ ខុសហើយ";
+                feedbackEl.className = "h-5 sm:h-6 text-xs sm:text-sm font-bold text-center w-full text-red-500";
             }
+            
+            // មិនឱ្យកែប្រែទៀតទេបន្ទាប់ពីដាក់រួច
+            droppable.classList.add('cursor-not-allowed', 'opacity-90');
         }
 
         let touchElement = null, originalParent = null, originalNextSibling = null;
@@ -694,7 +744,10 @@
 
             if (dropTarget) {
                 const actualDroppable = dropTarget.closest('.droppable');
-                if (actualDroppable) processDropByValue(touchElement.getAttribute('data-value'), actualDroppable);
+                // ឆែកមើលបើមានប្រអប់ទទួល ហើយប្រអប់នោះនៅទទេ ទើបឱ្យដាក់
+                if (actualDroppable && actualDroppable.textContent === '') {
+                    processDropByValue(touchElement.getAttribute('data-value'), actualDroppable);
+                }
             }
 
             touchElement.classList.remove('dragging', 'opacity-80');
