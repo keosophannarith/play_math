@@ -63,7 +63,7 @@
         <span>🟢</span> <span id="toast-msg">បានភ្ជាប់ទិន្នន័យពី Google Sheets ជោគជ័យ!</span>
     </div>
 
-    <!-- ផ្ទាំងបង្ហាញបញ្ហា Apps Script -->
+    <!-- ផ្ទាំងបង្ហាញបញ្ហា Apps Script (សម្រាប់ពេលអត់ PIN) -->
     <div id="script-error-modal" class="fixed inset-0 bg-black/80 z-[200] hidden flex items-center justify-center backdrop-blur-sm p-4">
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto border-4 border-red-400 max-h-[90vh] overflow-y-auto">
             <h2 class="text-2xl font-bold text-red-600 mb-4 flex items-center gap-2">⚠️ បញ្ហាមិនមានលេខសម្ងាត់ (PIN)</h2>
@@ -109,6 +109,22 @@
         </div>
     </div>
 
+    <!-- ផ្ទាំងបង្ហាញពិន្ទុ (Score Modal) -->
+    <div id="score-modal" class="fixed inset-0 bg-black/80 z-[300] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm mx-auto border-4 border-yellow-400 text-center transform transition-all">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-3xl font-bold text-purple-700 mb-2">អបអរសាទរ!</h2>
+            <p class="text-gray-600 mb-6 font-bold">ឯកសារត្រូវបានបញ្ជូនទៅគ្រូ</p>
+            <div class="bg-yellow-50 rounded-2xl p-6 mb-6 border-2 border-yellow-200">
+                <p class="text-gray-500 font-bold mb-2">ពិន្ទុរបស់អ្នកគឺ៖</p>
+                <div class="text-5xl font-extrabold text-yellow-600 flex justify-center items-baseline gap-2">
+                    <span id="final-score-value">០</span> <span class="text-2xl text-yellow-500">/ ២០</span>
+                </div>
+            </div>
+            <button onclick="closeScoreModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-purple-200 w-full text-xl">យល់ព្រម / បិទ</button>
+        </div>
+    </div>
+
     <!-- ផ្ទាំងសម្រាប់គ្រូ (Teacher Modal) -->
     <div id="teacher-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm p-4">
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-lg mx-auto border-4 border-purple-400">
@@ -131,7 +147,11 @@
             <p id="auth-student-name" class="font-bold text-gray-700 mb-4 text-lg"></p>
             
             <p class="text-sm text-gray-500 mb-2">បញ្ជាក់៖ អាចវាយជាលេខអង់គ្លេស ឬខ្មែរក៏បាន</p>
-            <input type="text" id="auth-pin-input" class="w-full text-center text-3xl font-bold rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none p-3 mb-6 tracking-widest text-purple-700" placeholder="វាយលេខទីនេះ">
+            <input type="text" id="auth-pin-input" class="w-full text-center text-3xl font-bold rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none p-3 mb-4 tracking-widest text-purple-700" placeholder="វាយលេខទីនេះ" onkeypress="handlePinEnter(event)">
+            
+            <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-r-lg mb-6 shadow-sm text-left text-sm text-red-700 leading-relaxed">
+                ⚠️ <span class="font-bold">ចំណាំ៖</span> សូមកូនផ្ទៀងផ្ទាត់ឱ្យបានច្បាស់លាស់មុននឹងវាយបញ្ចូល ឬទាញលេខយកទៅដាក់ ព្រោះពេលដាក់ហើយ មិនអាចកែប្រែវិញបានទេ!
+            </div>
             
             <div class="flex gap-4 justify-center">
                 <button onclick="cancelAuth()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm w-1/2">បោះបង់</button>
@@ -200,8 +220,7 @@
                                     <div class="bg-pink-50 w-full min-h-[80px] rounded-lg flex flex-wrap items-center justify-center p-2 mb-2 border border-pink-100">${emojisHtml}</div>
                                     <div class="flex items-center gap-2 w-full justify-center">
                                         <span class="text-xl font-bold text-gray-400">=</span>
-                                        <input type="text" inputmode="numeric" id="input-${item.id}" class="w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 border-gray-300 focus:border-pink-500 outline-none text-pink-600" maxlength="1" oninput="convertToKhmer(this)">
-                                        <button onclick="checkTyping('${item.id}', ${item.count})" class="bg-pink-500 hover:bg-pink-600 text-white font-bold h-14 px-4 rounded-lg shadow active:scale-95">ផ្ទៀង</button>
+                                        <input type="text" inputmode="numeric" id="input-${item.id}" class="w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 border-gray-300 focus:border-pink-500 outline-none text-pink-600" maxlength="1" oninput="handleTyping(this, '${item.id}', ${item.count})">
                                     </div>
                                     <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
                                 </div>
@@ -275,8 +294,7 @@
                                     <div class="p-4 bg-white flex flex-col gap-2">
                                         <div class="flex items-center gap-2">
                                             <span class="text-sm font-bold text-orange-800 flex-grow">ចំនួនសរុប៖</span>
-                                            <input type="text" inputmode="numeric" id="input-${item.id}" class="w-12 h-12 text-center text-xl font-bold rounded-lg border-2 border-orange-200 focus:border-orange-500 outline-none text-orange-600" maxlength="1" oninput="convertToKhmer(this)">
-                                            <button onclick="checkTyping('${item.id}', ${item.count})" class="bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 px-3 rounded-lg shadow active:scale-95">ផ្ទៀង</button>
+                                            <input type="text" inputmode="numeric" id="input-${item.id}" class="w-12 h-12 text-center text-xl font-bold rounded-lg border-2 border-orange-200 focus:border-orange-500 outline-none text-orange-600" maxlength="1" oninput="handleTyping(this, '${item.id}', ${item.count})">
                                         </div>
                                         <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
                                     </div>
@@ -402,6 +420,14 @@
             document.getElementById('student-photo-container').classList.add('hidden');
             currentStudentId = "";
             selectedStudentObj = null;
+        }
+
+        // អនុញ្ញាតឱ្យចុច Enter ដើម្បីផ្ទៀងផ្ទាត់
+        function handlePinEnter(event) {
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                event.preventDefault();
+                verifyStudentPin();
+            }
         }
 
         // ផ្ទៀងផ្ទាត់ ID របស់សិស្ស
@@ -538,8 +564,21 @@
         }
         // =====================================================================
 
+        function closeScoreModal() {
+            document.getElementById('score-modal').classList.add('hidden');
+        }
+
+        // មុខងារថ្មី ពេលកំពុងវាយលេខ ឆែកដោយស្វ័យប្រវត្តិ
+        function handleTyping(inputEl, id, correctAns) {
+            convertToKhmer(inputEl);
+            if (inputEl.value !== '') {
+                checkTyping(id, correctAns);
+            }
+        }
+
         function checkTyping(id, correctAns) {
-            const inputVal = document.getElementById('input-' + id).value;
+            const inputEl = document.getElementById('input-' + id);
+            const inputVal = inputEl.value;
             const feedEl = document.getElementById('feed-' + id);
             if (inputVal === '') return;
             
@@ -551,12 +590,21 @@
                 scores[id] = 1;
                 feedEl.textContent = "✅ ត្រឹមត្រូវ";
                 feedEl.className = "h-6 text-sm font-bold text-center w-full text-green-600 drop-shadow-sm";
+                inputEl.classList.replace('border-gray-300', 'border-green-500');
+                inputEl.classList.replace('border-orange-200', 'border-green-500');
+                inputEl.classList.add('bg-green-50', 'text-green-700');
             } else {
                 scores[id] = 0;
-                feedEl.textContent = "❌ សូមព្យាយាមម្តងទៀត";
+                feedEl.textContent = "❌ ខុសហើយ";
                 feedEl.className = "h-6 text-sm font-bold text-center w-full text-red-500";
-                setTimeout(() => { if(feedEl.textContent.includes('❌')) feedEl.textContent = ""; }, 2500);
+                inputEl.classList.replace('border-gray-300', 'border-red-400');
+                inputEl.classList.replace('border-orange-200', 'border-red-400');
+                inputEl.classList.add('bg-red-50', 'text-red-600');
             }
+
+            // បិទ input មិនឱ្យវាយ ឬលុបកែបានទៀតទេ (ReadOnly/Disabled)
+            inputEl.disabled = true;
+            inputEl.classList.add('cursor-not-allowed', 'opacity-90');
         }
 
         const draggables = document.querySelectorAll('.draggable');
@@ -689,11 +737,19 @@
 
                 const result = await response.json();
                 if (result.status === 'success') {
-                    alert(`✅ សូមអបអរសាទរ! ឯកសារត្រូវបានបញ្ជូន។ អ្នកទទួលបានពិន្ទុ: ${totalCorrect}/${totalQuestions}`);
+                    // បង្ហាញផ្ទាំងពិន្ទុ
+                    document.getElementById('final-score-value').textContent = toKhmerNum(totalCorrect);
+                    document.getElementById('score-modal').classList.remove('hidden');
                     
                     // បន្ទាប់ពីបញ្ជូនជោគជ័យ លាក់សិស្សចេញពីបញ្ជី
                     studentData[currentStudentId].completed = true;
-                    document.querySelector(`#student-select option[value="${currentStudentId}"]`).remove();
+                    
+                    // ការពារ Error ដោយឆែកសិនមុននឹងលុប Option
+                    const optionToRemove = document.querySelector(`#student-select option[value="${currentStudentId}"]`);
+                    if (optionToRemove) {
+                        optionToRemove.remove();
+                    }
+                    
                     document.getElementById('student-photo-container').classList.add('hidden');
                     document.getElementById('exercise-section').classList.add('hidden'); // លាក់លំហាត់វិញ
                     document.getElementById('student-select').value = "";
@@ -707,7 +763,12 @@
                     throw new Error(errMsg);
                 }
             } catch (e) {
-                alert("❌ មានបញ្ហា៖ " + e.message);
+                // កែសម្រួលសារប្រាប់ឱ្យដឹងចំៗ បើ Error Failed to fetch
+                if (e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
+                    alert("❌ បញ្ហាបញ្ជូនទិន្នន័យ៖ (Failed to fetch)\n\nនេះបណ្តាលមកពីកូដ doPost នៅក្នុង Google Apps Script របស់អ្នកមានបញ្ហា ឬអ្នកមិនទាន់បាន Allow Access ពេល Deploy ជា New Version។\n\nសូមទៅកែកូដ doPost ជាថ្មី រួច Deploy ម្តងទៀត!");
+                } else {
+                    alert("❌ មានបញ្ហា៖ " + e.message);
+                }
                 console.error(e);
             } finally {
                 btn.innerHTML = originalText;
