@@ -78,8 +78,8 @@
         <header class="bg-purple-600 p-4 md:p-6 text-white flex flex-col md:flex-row justify-between items-center gap-6 relative shadow-md">
             <div class="flex items-center gap-4">
                 <div class="w-20 h-20 bg-white rounded-full flex flex-col items-center justify-center overflow-hidden border-4 border-purple-300 shadow-inner flex-shrink-0">
-                    <span class="text-3xl">🏫</span>
-                    <span class="text-[10px] text-purple-600 font-bold leading-tight mt-1">Logo សាលា</span>
+                    <!-- រូបភាព Logo ដែលបានអាប់ដេតតាម Link Google Drive របស់អ្នក -->
+                    <img id="school-logo" src="https://lh3.googleusercontent.com/d/1Gx6xmt-xXf6EkgmXWkUp6r9eLnULAZWl" alt="Logo សាលា" class="w-full h-full object-contain p-1">
                 </div>
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold mb-1 drop-shadow-md">គណិតវិទ្យា ថ្នាក់ទី១</h1>
@@ -235,6 +235,18 @@
         let currentStudentId = "";
         let currentStudentName = "";
 
+        // មុខងារបំប្លែង Link Google Drive ទៅជា Direct Link សម្រាប់បង្ហាញរូបភាព
+        function getDirectDriveLink(url) {
+            if (!url || typeof url !== 'string') return url;
+            // ចាប់យក ID ពី Link Google Drive (ទោះមាន /view ក៏ដោយ)
+            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                // ប្រើ lh3.googleusercontent.com ដើម្បីអាចបង្ហាញរូបភាពភ្លាមៗដោយគ្មានបញ្ហា
+                return `https://lh3.googleusercontent.com/d/${match[1]}`;
+            }
+            return url;
+        }
+
         // មុខងារទាញយកទិន្នន័យសិស្សពេលបើកទំព័រ
         window.onload = async function() {
             const select = document.getElementById('student-select');
@@ -246,7 +258,7 @@
                 
                 select.innerHTML = '<option value="">-- រើសឈ្មោះសិស្ស --</option>';
                 data.forEach(stu => {
-                    studentData[stu.id] = { name: stu.name, photo: stu.photo };
+                    studentData[stu.id] = { name: stu.name, photo: getDirectDriveLink(stu.photo) };
                     const opt = document.createElement('option');
                     opt.value = stu.id;
                     opt.textContent = `${stu.id}: ${stu.name}`;
@@ -272,7 +284,16 @@
             if (val && studentData[val]) {
                 currentStudentId = val;
                 currentStudentName = studentData[val].name;
+                
+                // បង្ហាញរូបភាពដែលបានបំប្លែងរួច
                 img.src = studentData[val].photo;
+                
+                // ការពារករណីរូបភាពមានបញ្ហា ឬមិនបានបើកសិទ្ធិ Anyone with the link
+                img.onerror = function() {
+                    this.onerror = null;
+                    this.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentStudentId}&backgroundColor=c0aede`;
+                };
+
                 container.classList.remove('hidden');
                 
                 toastMsg.textContent = `ទាញយកទិន្នន័យ "${studentData[val].name}" ពី Google Sheets ជោគជ័យ!`;
