@@ -63,6 +63,16 @@
         <span>🟢</span> <span id="toast-msg">បានភ្ជាប់ទិន្នន័យពី Google Sheets ជោគជ័យ!</span>
     </div>
 
+    <!-- ផ្ទាំងជូនដំណឹងថ្មី (Custom Alert Modal) សម្រាប់ជំនួស Browser alert() -->
+    <div id="custom-alert-modal" class="fixed inset-0 bg-black/60 z-[400] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm mx-auto border-4 border-purple-400 text-center">
+            <div id="custom-alert-icon" class="text-5xl mb-4">⚠️</div>
+            <h3 id="custom-alert-title" class="text-xl font-bold text-purple-700 mb-2">ជូនដំណឹង</h3>
+            <p id="custom-alert-message" class="text-gray-600 mb-6 font-medium leading-relaxed"></p>
+            <button onclick="closeCustomAlert()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-purple-200 w-full text-lg">យល់ព្រម</button>
+        </div>
+    </div>
+
     <!-- ផ្ទាំងបង្ហាញបញ្ហា Apps Script (សម្រាប់ពេលអត់ PIN) -->
     <div id="script-error-modal" class="fixed inset-0 bg-black/80 z-[200] hidden flex items-center justify-center backdrop-blur-sm p-4">
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto border-4 border-red-400 max-h-[90vh] overflow-y-auto">
@@ -179,7 +189,10 @@
             <p id="auth-student-name" class="font-bold text-gray-700 mb-4 text-lg"></p>
             
             <p class="text-sm text-gray-500 mb-2">បញ្ជាក់៖ អាចវាយជាលេខអង់គ្លេស ឬខ្មែរក៏បាន</p>
-            <input type="text" id="auth-pin-input" class="w-full text-center text-3xl font-bold rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none p-3 mb-4 tracking-widest text-purple-700" placeholder="វាយលេខទីនេះ" onkeypress="handlePinEnter(event)">
+            <input type="text" id="auth-pin-input" class="w-full text-center text-3xl font-bold rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none p-3 mb-2 tracking-widest text-purple-700" placeholder="វាយលេខទីនេះ" onkeypress="handlePinEnter(event)">
+            
+            <!-- កន្លែងបង្ហាញសារកំហុស (Error/Lockout message in red) -->
+            <div id="auth-error-msg" class="text-red-600 font-bold mb-4 text-sm bg-red-50 p-3 rounded-xl border border-red-200 hidden leading-relaxed"></div>
             
             <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-r-lg mb-6 shadow-sm text-left text-sm text-red-700 leading-relaxed">
                 ⚠️ <span class="font-bold">ចំណាំ៖</span> សូមកូនផ្ទៀងផ្ទាត់ឱ្យបានច្បាស់លាស់មុននឹងវាយបញ្ចូល ឬទាញលេខយកទៅដាក់ ព្រោះពេលដាក់ហើយ មិនអាចកែប្រែវិញបានទេ!
@@ -361,6 +374,22 @@
         let currentStudentName = "";
         let selectedStudentObj = null;
 
+        // បង្កើត State សម្រាប់ចងចាំការវាយលេខសម្ងាត់ខុស និងម៉ោងត្រូវចាក់សោរ (Lockout)
+        let failedAttempts = {};
+        let lockoutTimes = {};
+
+        // មុខងារបង្ហាញផ្ទាំងជូនដំណឹងថ្មី (Custom Alert)
+        function showCustomAlert(message, title = "ជូនដំណឹង", icon = "⚠️") {
+            document.getElementById('custom-alert-title').textContent = title;
+            document.getElementById('custom-alert-message').innerHTML = message.replace(/\n/g, '<br>');
+            document.getElementById('custom-alert-icon').textContent = icon;
+            document.getElementById('custom-alert-modal').classList.remove('hidden');
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('custom-alert-modal').classList.add('hidden');
+        }
+
         // បំប្លែងលេខអារ៉ាប់ ទៅជាលេខខ្មែរ ដោយស្វ័យប្រវត្តិ សម្រាប់ការវាយលេខក្នុងលំហាត់
         function convertToKhmer(inputEl) {
             let val = inputEl.value;
@@ -369,15 +398,17 @@
             inputEl.value = val.replace(/[^០-៩]/g, '');
         }
 
-        // បំប្លែងលេខខ្មែរ មកលេខអារ៉ាប់វិញ (សម្រាប់ធ្វើការផ្ទៀងផ្ទាត់ចម្លើយ)
+        // បំប្លែងលេខខ្មែរ មកលេខអារ៉ាប់វិញ និងលុបតួអក្សរឬចន្លោះមិនមែនជាលេខចេញឱ្យអស់ (សម្រាប់ធ្វើការផ្ទៀងផ្ទាត់ចម្លើយ)
         function toArabicNum(numStr) {
+            if (numStr === null || numStr === undefined) return "";
             const arabicNums = {'០':'0', '១':'1', '២':'2', '៣':'3', '៤':'4', '៥':'5', '៦':'6', '៧':'7', '៨':'8', '៩':'9'};
-            return numStr.toString().replace(/[០-៩]/g, match => arabicNums[match]);
+            let cleanStr = String(numStr).replace(/[០-៩]/g, match => arabicNums[match]);
+            return cleanStr.replace(/[^0-9]/g, ''); // រក្សាទុកតែលេខ 0-9 ប៉ុណ្ណោះ
         }
 
         function toKhmerNum(numStr) {
             const khmerNums = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
-            return numStr.toString().split('').map(digit => khmerNums[digit] || digit).join('');
+            return String(numStr).split('').map(digit => khmerNums[digit] || digit).join('');
         }
 
         function getDirectDriveLink(url) {
@@ -425,6 +456,9 @@
         // ពេលសិស្សរើសឈ្មោះ លោតផ្ទាំងឱ្យបញ្ចូល ID
         function onStudentSelect() {
             const val = document.getElementById('student-select').value;
+            const errorEl = document.getElementById('auth-error-msg');
+            errorEl.classList.add('hidden');
+            errorEl.textContent = '';
             
             if (val && studentData[val]) {
                 selectedStudentObj = studentData[val];
@@ -442,6 +476,16 @@
 
                 document.getElementById('auth-pin-input').value = '';
                 document.getElementById('student-auth-modal').classList.remove('hidden');
+
+                // ពិនិត្យមើលភ្លាមៗ ក្រែងលោគណនីនេះត្រូវបានចាក់សោរពីមុនមក
+                if (lockoutTimes[currentStudentId] && Date.now() < lockoutTimes[currentStudentId]) {
+                    const remainingMs = lockoutTimes[currentStudentId] - Date.now();
+                    const remainingMins = Math.ceil(remainingMs / 60000);
+                    errorEl.textContent = `❌ គណនីនេះត្រូវបានផ្អាកជាបណ្តោះអាសន្ន។ សូមរង់ចាំ ${toKhmerNum(remainingMins)} នាទីទៀត ទើបអាចសាកល្បងបាន។`;
+                    errorEl.classList.remove('hidden');
+                    
+                    showCustomAlert(`គណនីត្រូវបានផ្អាក!\nសូមរង់ចាំ ${toKhmerNum(remainingMins)} នាទីទៀត ទើបអាចសាកល្បងបាន។`, "គណនីបានផ្អាក", "🔒");
+                }
             } else {
                 cancelAuth();
             }
@@ -467,30 +511,70 @@
 
         // ផ្ទៀងផ្ទាត់ ID របស់សិស្ស
         function verifyStudentPin() {
-            const inputPin = document.getElementById('auth-pin-input').value;
-            
-            console.log("ទិន្នន័យសិស្សពី Apps Script:", selectedStudentObj);
-            console.log("PIN ពី Apps Script គឺ:", selectedStudentObj ? selectedStudentObj.pin : "គ្មាន");
+            const errorEl = document.getElementById('auth-error-msg');
+            errorEl.classList.add('hidden');
+            errorEl.textContent = '';
 
-            // ឆែកមើលថាតើទិន្នន័យពី Apps Script មានបញ្ជូន pin មកឬអត់
-            if (selectedStudentObj && (selectedStudentObj.pin === undefined || selectedStudentObj.pin === null)) {
-                // បង្ហាញផ្ទាំងណែនាំអំពី Apps Script ជំនួសឱ្យ alert ធម្មតា
+            // ១. ពិនិត្យមើលថាតើសិស្សនេះកំពុងជាប់ចាក់សោរ (Lockout) ១៥នាទី ឬអត់
+            if (lockoutTimes[currentStudentId] && Date.now() < lockoutTimes[currentStudentId]) {
+                const remainingMs = lockoutTimes[currentStudentId] - Date.now();
+                const remainingMins = Math.ceil(remainingMs / 60000);
+                errorEl.textContent = `❌ គណនីនេះត្រូវបានផ្អាកជាបណ្តោះអាសន្ន។ សូមរង់ចាំ ${toKhmerNum(remainingMins)} នាទីទៀត ទើបអាចសាកល្បងម្តងទៀតបាន។`;
+                errorEl.classList.remove('hidden');
+                
+                showCustomAlert(`គណនីត្រូវបានផ្អាក!\nសូមរង់ចាំ ${toKhmerNum(remainingMins)} នាទីទៀត ទើបអាចសាកល្បងម្តងទៀតបាន។`, "គណនីបានផ្អាក", "🔒");
+                return;
+            }
+
+            // ២. ទាញយកលេខដែលសិស្សវាយ និងលេខពីប្រព័ន្ធមកប្រៀបធៀប (FORCE String type)
+            let inputPin = document.getElementById('auth-pin-input').value;
+            let correctPin = selectedStudentObj ? selectedStudentObj.pin : "0000";
+            
+            if (correctPin === undefined || correctPin === null) {
                 document.getElementById('script-error-modal').classList.remove('hidden');
                 return;
             }
             
-            const correctPin = (selectedStudentObj && selectedStudentObj.pin !== undefined && selectedStudentObj.pin !== "") ? selectedStudentObj.pin.toString().trim() : "0000";
-            
-            // បំប្លែងទាំងពីរទៅជាលេខអារ៉ាប់ដើម្បីផ្ទៀងផ្ទាត់
-            const inputArabic = toArabicNum(inputPin.trim());
-            const correctArabic = toArabicNum(correctPin);
+            // បំប្លែងទៅជា String ឱ្យប្រាកដប្រជា និងលុបរាល់តួអក្សរឥតប្រយោជន៍ចោល
+            let inputArabic = String(toArabicNum(inputPin)).trim();
+            let correctArabic = String(toArabicNum(correctPin)).trim();
 
-            if (inputArabic === correctArabic && inputArabic !== "") {
-                // ជោគជ័យ - បើកសោរឱ្យចូលធ្វើលំហាត់
+            console.log("លេខដែលសិស្សវាយ (ស្អាតរួច):", inputArabic, "ប្រវែង:", inputArabic.length);
+            console.log("លេខសម្ងាត់ត្រឹមត្រូវ (ស្អាតរួច):", correctArabic, "ប្រវែង:", correctArabic.length);
+
+            // ការប្រៀបធៀបត្រូវតែដូចគ្នា ១០០% និងមិនទទេ
+            if (inputArabic === correctArabic && inputArabic.length > 0) {
+                console.log("✅ ចូលជោគជ័យ! បើកផ្ទាំងលំហាត់...");
+                // ជោគជ័យ - លុបចោលប្រវត្តិខុស និងបើកសោរឱ្យចូលធ្វើលំហាត់
+                failedAttempts[currentStudentId] = 0;
+                delete lockoutTimes[currentStudentId];
                 document.getElementById('student-auth-modal').classList.add('hidden');
                 unlockExercises();
             } else {
-                alert("❌ លេខសម្ងាត់ (ID) មិនត្រឹមត្រូវទេ! សូមពិនិត្យមើលម្តងទៀត។");
+                console.log("❌ បរាជ័យ! លេខមិនត្រូវគ្នា។");
+                // កត់ត្រាការវាយខុស
+                failedAttempts[currentStudentId] = (failedAttempts[currentStudentId] || 0) + 1;
+                
+                if (failedAttempts[currentStudentId] >= 5) {
+                    // ប្រសិនបើខុស ៥ ដង ចាក់សោររយៈពេល ១៥ នាទី
+                    lockoutTimes[currentStudentId] = Date.now() + 15 * 60 * 1000;
+                    errorEl.textContent = "❌ លេខសម្ងាត់របស់អ្នកមិនត្រឹមត្រូវទេ! ប្រព័ន្ធត្រូវបានផ្អាករយៈពេល ១៥ នាទី។";
+                    
+                    // លោត Alert បញ្ជាក់
+                    showCustomAlert("លេខសម្ងាត់មិនត្រឹមត្រូវ សូមព្យាយាមម្តងទៀត\n\n(អ្នកបានវាយខុស ៥ ដង ប្រព័ន្ធផ្អាក ១៥ នាទី)", "គណនីបានផ្អាក", "🔒");
+                } else {
+                    const remaining = 5 - failedAttempts[currentStudentId];
+                    errorEl.textContent = `❌ លេខសម្ងាត់មិនត្រឹមត្រូវ (សល់ ${toKhmerNum(remaining)} ដង)`;
+                    
+                    // លោត Alert បញ្ជាក់តាមការស្នើសុំ
+                    showCustomAlert("លេខសម្ងាត់មិនត្រឹមត្រូវ សូមព្យាយាមម្តងទៀត", "ជូនដំណឹង", "❌");
+                }
+                
+                errorEl.classList.remove('hidden');
+                
+                // សម្អាតប្រអប់បញ្ចូល ដើម្បីឱ្យសិស្សងាយស្រួលវាយថ្មី
+                document.getElementById('auth-pin-input').value = '';
+                document.getElementById('auth-pin-input').focus();
             }
         }
 
@@ -549,7 +633,7 @@
                 renderCompletedStudents();
                 document.getElementById('teacher-modal').classList.remove('hidden');
             } else {
-                alert("❌ លេខសម្ងាត់មិនត្រឹមត្រូវ!");
+                showCustomAlert("❌ លេខសម្ងាត់របស់គ្រូមិនត្រឹមត្រូវទេ!", "ផ្ទាំងសុវត្ថិភាពគ្រូ", "🔒");
             }
         }
 
@@ -557,6 +641,7 @@
             document.getElementById('teacher-modal').classList.add('hidden');
         }
 
+        // បង្ហាញបញ្ជីសិស្សដែលបានធ្វើរួច
         function renderCompletedStudents() {
             const list = document.getElementById('completed-students-list');
             list.innerHTML = '';
@@ -622,9 +707,13 @@
                 
                 const result = await response.json();
                 if (result.status === 'success') {
+                    // លុប lockout របស់សិស្សចេញ ប្រសិនបើមាន ពេលគ្រូឱ្យធ្វើឡើងវិញ
+                    failedAttempts[studentId] = 0;
+                    delete lockoutTimes[studentId];
+
                     // អាប់ដេតបញ្ជីដោយមិនបាច់ Refresh វេបសាយឡើយ
                     studentData[studentId].completed = false;
-                    renderCompletedStudents(); // Refresh teacher list
+                    renderCompletedStudents(); // Refresh list របស់គ្រូ
                     
                     // លោតសារជោគជ័យ
                     const toast = document.getElementById('toast');
@@ -652,7 +741,7 @@
                     throw new Error(errMsg);
                 }
             } catch(e) {
-                alert("❌ មានបញ្ហា៖ " + e.message);
+                showCustomAlert("❌ មានបញ្ហា៖ " + e.message, "កំហុស", "⚠️");
                 btnElement.innerHTML = originalText;
                 btnElement.disabled = false;
             }
@@ -805,7 +894,7 @@
 
         async function submitScore() {
             if (!currentStudentId) {
-                alert("សូមជ្រើសរើសឈ្មោះសិស្សនៅខាងលើជាមុនសិន មុននឹងបញ្ជូនចម្លើយ!");
+                showCustomAlert("សូមជ្រើសរើសឈ្មោះសិស្សនៅខាងលើជាមុនសិន មុននឹងបញ្ជូនចម្លើយ!", "ជ្រើសរើសសិស្ស", "👤");
                 return;
             }
             const totalCorrect = Object.values(scores).reduce((a, b) => a + b, 0);
@@ -861,9 +950,9 @@
             } catch (e) {
                 // កែសម្រួលសារប្រាប់ឱ្យដឹងចំៗ បើ Error Failed to fetch
                 if (e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
-                    alert("❌ បញ្ហាបញ្ជូនទិន្នន័យ៖ (Failed to fetch)\n\nនេះបណ្តាលមកពីកូដ doPost នៅក្នុង Google Apps Script របស់អ្នកមានបញ្ហា ឬអ្នកមិនទាន់បាន Allow Access ពេល Deploy ជា New Version។\n\nសូមទៅកែកូដ doPost ជាថ្មី រួច Deploy ម្តងទៀត!");
+                    showCustomAlert("❌ បញ្ហាបញ្ជូនទិន្នន័យ៖ (Failed to fetch)\n\nនេះបណ្តាលមកពីកូដ doPost នៅក្នុង Google Apps Script របស់អ្នកមានបញ្ហា ឬអ្នកមិនទាន់បាន Allow Access ពេល Deploy ជា New Version។\n\nសូមទៅកែកូដ doPost ជាថ្មី រួច Deploy ម្តងទៀត!", "កំហុសបណ្តាញ", "🌐");
                 } else {
-                    alert("❌ មានបញ្ហា៖ " + e.message);
+                    showCustomAlert("❌ មានបញ្ហា៖ " + e.message, "កំហុស", "⚠️");
                 }
                 console.error(e);
             } finally {
