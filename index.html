@@ -47,15 +47,6 @@
             font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
         }
 
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-
         @keyframes slideDown {
             from { transform: translateY(-100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -65,12 +56,94 @@
         }
     </style>
 </head>
-<body class="p-2 md:p-6 pb-20">
+<body class="p-2 md:p-6 pb-20 relative min-h-screen">
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 hidden bg-green-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-bold">
         <span>🟢</span> <span id="toast-msg">បានភ្ជាប់ទិន្នន័យពី Google Sheets ជោគជ័យ!</span>
     </div>
+
+    <!-- ផ្ទាំងបង្ហាញបញ្ហា Apps Script -->
+    <div id="script-error-modal" class="fixed inset-0 bg-black/80 z-[200] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-2xl mx-auto border-4 border-red-400 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-bold text-red-600 mb-4 flex items-center gap-2">⚠️ បញ្ហាមិនមានលេខសម្ងាត់ (PIN)</h2>
+            <p class="text-gray-700 mb-4">ប្រព័ន្ធរកមិនឃើញលេខសម្ងាត់របស់សិស្សទេ។ នេះមកពី <strong>Google Apps Script</strong> របស់អ្នកមិនទាន់បានអាប់ដេត។ សូមធ្វើតាម ២ ជំហាននេះ៖</p>
+            
+            <div class="bg-gray-100 p-4 rounded-xl mb-4 text-left">
+                <h3 class="font-bold text-gray-800 mb-2">ជំហានទី១៖ កូពីកូដនេះទៅដាក់ក្នុង Apps Script របស់អ្នក (ជំនួសកូដចាស់)</h3>
+                <pre class="bg-gray-800 text-green-400 p-3 rounded-lg text-sm overflow-x-auto" dir="ltr"><code>function doGet(e) {
+  if (e.parameter.action == "getStudents") {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Students");
+    var data = sheet.getDataRange().getValues();
+    var result = [];
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] != "") {
+        result.push({
+          id: data[i][0].toString(),
+          name: data[i][1].toString(),
+          photo: data[i][2].toString(),
+          pin: data[i][3] ? data[i][3].toString() : "0000",
+          completed: data[i][4] === true || data[i][4] === "true"
+        });
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  }
+}</code></pre>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-xl mb-6 border border-blue-200 text-left">
+                <h3 class="font-bold text-blue-800 mb-2">ជំហានទី២៖ ធ្វើការ Deploy ជា "New version" (សំខាន់បំផុត!)</h3>
+                <ol class="list-decimal pl-5 text-gray-700 space-y-2">
+                    <li>ចុចប៊ូតុង <strong>Deploy</strong> (ពណ៌ខៀវខាងលើស្តាំ)</li>
+                    <li>ជ្រើសរើស <strong>Manage deployments</strong></li>
+                    <li>ចុចលើរូប <strong>ខ្មៅដៃ (Edit)</strong> ✏️</li>
+                    <li>ត្រង់ <strong>Version:</strong> ចុចរើសយក <strong>New version</strong> <em>(កុំទុកលេខចាស់ឱ្យសោះ)</em></li>
+                    <li>ចុចប៊ូតុង <strong>Deploy</strong> រួចមកកាន់វេបសាយនេះ Refresh ម្តងជាការស្រេច។</li>
+                </ol>
+            </div>
+
+            <div class="flex justify-center">
+                <button onclick="document.getElementById('script-error-modal').classList.add('hidden')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-8 rounded-xl transition-colors shadow-sm">យល់ព្រម / បិទ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ផ្ទាំងសម្រាប់គ្រូ (Teacher Modal) -->
+    <div id="teacher-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-lg mx-auto border-4 border-purple-400">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-2xl font-bold text-purple-700 flex items-center gap-2">👨‍🏫 ផ្ទាំងគ្រប់គ្រងសម្រាប់គ្រូ</h2>
+                <button onclick="closeTeacherModal()" class="text-gray-400 hover:text-red-500 text-3xl transition-colors">&times;</button>
+            </div>
+            <p class="text-gray-600 mb-4 font-bold">សិស្សដែលបានធ្វើលំហាត់រួចរាល់៖</p>
+            <div id="completed-students-list" class="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
+                <!-- បញ្ជីសិស្សនឹងបង្ហាញនៅទីនេះ -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ផ្ទាំងសុវត្ថិភាពសិស្ស (បញ្ចូល ID) -->
+    <div id="student-auth-modal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm mx-auto border-4 border-purple-400 text-center relative">
+            <h2 class="text-xl font-bold text-purple-700 mb-4">សូមវាយលេខសម្ងាត់ (ID)</h2>
+            <img id="auth-student-photo" src="" class="w-20 h-20 rounded-full mx-auto mb-2 object-cover border-4 border-purple-200 bg-gray-100">
+            <p id="auth-student-name" class="font-bold text-gray-700 mb-4 text-lg"></p>
+            
+            <p class="text-sm text-gray-500 mb-2">បញ្ជាក់៖ អាចវាយជាលេខអង់គ្លេស ឬខ្មែរក៏បាន</p>
+            <input type="text" id="auth-pin-input" class="w-full text-center text-3xl font-bold rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none p-3 mb-6 tracking-widest text-purple-700" placeholder="វាយលេខទីនេះ">
+            
+            <div class="flex gap-4 justify-center">
+                <button onclick="cancelAuth()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm w-1/2">បោះបង់</button>
+                <button onclick="verifyStudentPin()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-purple-200 w-1/2 border-2 border-purple-700">ចូលរួម</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ប៊ូតុងចូលផ្ទាំងគ្រូ -->
+    <button onclick="openTeacherModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-purple-600 text-white rounded-full shadow-2xl hover:bg-purple-700 transition-transform hover:scale-110 flex items-center justify-center text-2xl z-40 border-2 border-white" title="សម្រាប់គ្រូ">
+        👨‍🏫
+    </button>
 
     <div class="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-purple-300">
         
@@ -78,7 +151,6 @@
         <header class="bg-purple-600 p-4 md:p-6 text-white flex flex-col md:flex-row justify-between items-center gap-6 relative shadow-md">
             <div class="flex items-center gap-4">
                 <div class="w-20 h-20 bg-white rounded-full flex flex-col items-center justify-center overflow-hidden border-4 border-purple-300 shadow-inner flex-shrink-0">
-                    <!-- រូបភាព Logo ដែលបានអាប់ដេតតាម Link Google Drive របស់អ្នក -->
                     <img id="school-logo" src="https://lh3.googleusercontent.com/d/1Gx6xmt-xXf6EkgmXWkUp6r9eLnULAZWl" alt="Logo សាលា" class="w-full h-full object-contain p-1">
                 </div>
                 <div>
@@ -91,7 +163,7 @@
                 <div class="flex flex-col">
                     <label for="student-select" class="text-xs text-purple-100 mb-1 flex items-center gap-1">
                         <svg class="w-3 h-3 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg>
-                        ទិន្នន័យពី Google Sheets
+                        ជ្រើសរើសសិស្ស
                     </label>
                     <select id="student-select" onchange="onStudentSelect()" class="text-gray-800 p-2 rounded-lg outline-none font-bold bg-white border-2 border-purple-300 focus:border-purple-500 cursor-pointer min-w-[150px]">
                         <option value="">-- រើសឈ្មោះសិស្ស --</option>
@@ -103,7 +175,8 @@
             </div>
         </header>
 
-        <div class="p-4 md:p-8 space-y-10">
+        <!-- ផ្នែកលំហាត់ (ត្រូវបានលាក់រហូតទាល់តែបញ្ជាក់ ID ត្រូវ) -->
+        <div id="exercise-section" class="p-4 md:p-8 space-y-10 hidden">
             
             <!-- ផ្នែកទី១: វាយលេខបញ្ចូល -->
             <section class="bg-pink-50 p-4 md:p-6 rounded-2xl border-2 border-pink-200 shadow-sm relative">
@@ -127,7 +200,7 @@
                                     <div class="bg-pink-50 w-full min-h-[80px] rounded-lg flex flex-wrap items-center justify-center p-2 mb-2 border border-pink-100">${emojisHtml}</div>
                                     <div class="flex items-center gap-2 w-full justify-center">
                                         <span class="text-xl font-bold text-gray-400">=</span>
-                                        <input type="number" id="input-${item.id}" class="w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 border-gray-300 focus:border-pink-500 outline-none" min="1" max="5">
+                                        <input type="text" inputmode="numeric" id="input-${item.id}" class="w-14 h-14 text-center text-2xl font-bold rounded-lg border-2 border-gray-300 focus:border-pink-500 outline-none text-pink-600" maxlength="1" oninput="convertToKhmer(this)">
                                         <button onclick="checkTyping('${item.id}', ${item.count})" class="bg-pink-500 hover:bg-pink-600 text-white font-bold h-14 px-4 rounded-lg shadow active:scale-95">ផ្ទៀង</button>
                                     </div>
                                     <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
@@ -202,7 +275,7 @@
                                     <div class="p-4 bg-white flex flex-col gap-2">
                                         <div class="flex items-center gap-2">
                                             <span class="text-sm font-bold text-orange-800 flex-grow">ចំនួនសរុប៖</span>
-                                            <input type="number" id="input-${item.id}" class="w-12 h-12 text-center text-xl font-bold rounded-lg border-2 border-orange-200 focus:border-orange-500 outline-none" min="1" max="5">
+                                            <input type="text" inputmode="numeric" id="input-${item.id}" class="w-12 h-12 text-center text-xl font-bold rounded-lg border-2 border-orange-200 focus:border-orange-500 outline-none text-orange-600" maxlength="1" oninput="convertToKhmer(this)">
                                             <button onclick="checkTyping('${item.id}', ${item.count})" class="bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 px-3 rounded-lg shadow active:scale-95">ផ្ទៀង</button>
                                         </div>
                                         <div id="feed-${item.id}" class="h-6 text-sm font-bold text-center w-full"></div>
@@ -227,27 +300,45 @@
         // =====================================================================
         // ១. កន្លែងដាក់ URL របស់ GOOGLE APPS SCRIPT
         // =====================================================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOjxIyc_uoaI8vTSxKYxxcoAX9azrPaBdkhz9wxpcxwzku25fMT2ujVH2uMgUXe7DO/exec";
+        // សូមលុបលីងចាស់ចេញ ហើយ Paste លីងថ្មីដែលអ្នកទើបតែ Deploy រួចយកមកដាក់នៅទីនេះ ⚠️
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrWSZzY2SCPsFlN9OEBt2EGIlvu9QZ0pS8Tf7uGABZDmq2BDV7p8GDjUsAUw7_1t8E/exec";
         // =====================================================================
+        const TEACHER_PIN = "1234"; 
 
         let studentData = {};
         let scores = {}; 
         let currentStudentId = "";
         let currentStudentName = "";
+        let selectedStudentObj = null;
 
-        // មុខងារបំប្លែង Link Google Drive ទៅជា Direct Link សម្រាប់បង្ហាញរូបភាព
+        // បំប្លែងលេខអារ៉ាប់ ទៅជាលេខខ្មែរ ដោយស្វ័យប្រវត្តិ សម្រាប់ការវាយលេខក្នុងលំហាត់
+        function convertToKhmer(inputEl) {
+            let val = inputEl.value;
+            const khmerNums = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+            val = val.replace(/[0-9]/g, match => khmerNums[match]);
+            inputEl.value = val.replace(/[^០-៩]/g, '');
+        }
+
+        // បំប្លែងលេខខ្មែរ មកលេខអារ៉ាប់វិញ (សម្រាប់ធ្វើការផ្ទៀងផ្ទាត់ចម្លើយ)
+        function toArabicNum(numStr) {
+            const arabicNums = {'០':'0', '១':'1', '២':'2', '៣':'3', '៤':'4', '៥':'5', '៦':'6', '៧':'7', '៨':'8', '៩':'9'};
+            return numStr.toString().replace(/[០-៩]/g, match => arabicNums[match]);
+        }
+
+        function toKhmerNum(numStr) {
+            const khmerNums = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+            return numStr.toString().split('').map(digit => khmerNums[digit] || digit).join('');
+        }
+
         function getDirectDriveLink(url) {
             if (!url || typeof url !== 'string') return url;
-            // ចាប់យក ID ពី Link Google Drive (ទោះមាន /view ក៏ដោយ)
             const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
-                // ប្រើ lh3.googleusercontent.com ដើម្បីអាចបង្ហាញរូបភាពភ្លាមៗដោយគ្មានបញ្ហា
                 return `https://lh3.googleusercontent.com/d/${match[1]}`;
             }
             return url;
         }
 
-        // មុខងារទាញយកទិន្នន័យសិស្សពេលបើកទំព័រ
         window.onload = async function() {
             const select = document.getElementById('student-select');
             select.innerHTML = '<option value="">-- កំពុងទាញយកទិន្នន័យ... --</option>';
@@ -258,72 +349,204 @@
                 
                 select.innerHTML = '<option value="">-- រើសឈ្មោះសិស្ស --</option>';
                 data.forEach(stu => {
-                    studentData[stu.id] = { name: stu.name, photo: getDirectDriveLink(stu.photo) };
-                    const opt = document.createElement('option');
-                    opt.value = stu.id;
-                    opt.textContent = `${stu.id}: ${stu.name}`;
-                    select.appendChild(opt);
+                    studentData[stu.id] = { 
+                        name: stu.name, 
+                        photo: getDirectDriveLink(stu.photo),
+                        pin: stu.pin, // ទាញយក PIN ពី Sheet
+                        completed: stu.completed 
+                    };
+                    
+                    if (!stu.completed) {
+                        const opt = document.createElement('option');
+                        opt.value = stu.id;
+                        opt.textContent = `${stu.id}: ${stu.name}`;
+                        select.appendChild(opt);
+                    }
                 });
             } catch (e) {
-                console.log("កំពុងប្រើប្រាស់ទិន្នន័យសាកល្បង ដោយសារមិនទាន់ដាក់ SCRIPT URL");
-                studentData = {
-                    'ID001': { name: 'សុខ សាន្ត', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sok&backgroundColor=c0aede' },
-                    'ID002': { name: 'ចាន់ ធីតា', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chan&backgroundColor=ffdfbf' }
-                };
-                select.innerHTML = '<option value="">-- រើសឈ្មោះសិស្ស --</option><option value="ID001">ID001: សុខ សាន្ត</option><option value="ID002">ID002: ចាន់ ធីតា</option>';
+                console.log("មានបញ្ហាក្នុងការភ្ជាប់");
+                select.innerHTML = '<option value="">-- មិនមានសិស្ស --</option>';
             }
         };
 
+        // ពេលសិស្សរើសឈ្មោះ លោតផ្ទាំងឱ្យបញ្ចូល ID
         function onStudentSelect() {
             const val = document.getElementById('student-select').value;
-            const container = document.getElementById('student-photo-container');
-            const img = document.getElementById('student-photo');
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-msg');
-
+            
             if (val && studentData[val]) {
+                selectedStudentObj = studentData[val];
                 currentStudentId = val;
-                currentStudentName = studentData[val].name;
                 
-                // បង្ហាញរូបភាពដែលបានបំប្លែងរួច
-                img.src = studentData[val].photo;
+                // បង្ហាញផ្ទាំង Auth Modal
+                document.getElementById('auth-student-name').textContent = selectedStudentObj.name;
                 
-                // ការពារករណីរូបភាពមានបញ្ហា ឬមិនបានបើកសិទ្ធិ Anyone with the link
+                const img = document.getElementById('auth-student-photo');
+                img.src = selectedStudentObj.photo;
                 img.onerror = function() {
                     this.onerror = null;
                     this.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentStudentId}&backgroundColor=c0aede`;
                 };
 
-                container.classList.remove('hidden');
-                
-                toastMsg.textContent = `ទាញយកទិន្នន័យ "${studentData[val].name}" ពី Google Sheets ជោគជ័យ!`;
-                toast.classList.remove('hidden');
-                toast.classList.add('toast-enter');
-                setTimeout(() => {
-                    toast.classList.remove('toast-enter');
-                    toast.classList.add('hidden');
-                }, 3500);
+                document.getElementById('auth-pin-input').value = '';
+                document.getElementById('student-auth-modal').classList.remove('hidden');
             } else {
-                container.classList.add('hidden');
-                currentStudentId = "";
-                currentStudentName = "";
+                cancelAuth();
             }
         }
 
-        // ២. មុខងារផ្ទៀងផ្ទាត់ការវាយលេខ
-        function toKhmerNum(numStr) {
-            const khmerNums = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
-            return numStr.toString().split('').map(digit => khmerNums[digit] || digit).join('');
+        // បោះបង់ការចូល
+        function cancelAuth() {
+            document.getElementById('student-auth-modal').classList.add('hidden');
+            document.getElementById('student-select').value = "";
+            document.getElementById('exercise-section').classList.add('hidden');
+            document.getElementById('student-photo-container').classList.add('hidden');
+            currentStudentId = "";
+            selectedStudentObj = null;
         }
+
+        // ផ្ទៀងផ្ទាត់ ID របស់សិស្ស
+        function verifyStudentPin() {
+            const inputPin = document.getElementById('auth-pin-input').value;
+            
+            console.log("ទិន្នន័យសិស្សពី Apps Script:", selectedStudentObj);
+            console.log("PIN ពី Apps Script គឺ:", selectedStudentObj ? selectedStudentObj.pin : "គ្មាន");
+
+            // ឆែកមើលថាតើទិន្នន័យពី Apps Script មានបញ្ជូន pin មកឬអត់
+            if (selectedStudentObj && (selectedStudentObj.pin === undefined || selectedStudentObj.pin === null)) {
+                // បង្ហាញផ្ទាំងណែនាំអំពី Apps Script ជំនួសឱ្យ alert ធម្មតា
+                document.getElementById('script-error-modal').classList.remove('hidden');
+                return;
+            }
+            
+            const correctPin = (selectedStudentObj && selectedStudentObj.pin !== undefined && selectedStudentObj.pin !== "") ? selectedStudentObj.pin.toString().trim() : "0000";
+            
+            // បំប្លែងទាំងពីរទៅជាលេខអារ៉ាប់ដើម្បីផ្ទៀងផ្ទាត់
+            const inputArabic = toArabicNum(inputPin.trim());
+            const correctArabic = toArabicNum(correctPin);
+
+            if (inputArabic === correctArabic && inputArabic !== "") {
+                // ជោគជ័យ - បើកសោរឱ្យចូលធ្វើលំហាត់
+                document.getElementById('student-auth-modal').classList.add('hidden');
+                unlockExercises();
+            } else {
+                alert("❌ លេខសម្ងាត់ (ID) មិនត្រឹមត្រូវទេ! សូមពិនិត្យមើលម្តងទៀត។");
+            }
+        }
+
+        // បើកសោរទំព័រលំហាត់
+        function unlockExercises() {
+            currentStudentName = selectedStudentObj.name;
+            
+            const container = document.getElementById('student-photo-container');
+            const img = document.getElementById('student-photo');
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+
+            img.src = selectedStudentObj.photo;
+            img.onerror = function() {
+                this.onerror = null;
+                this.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentStudentId}&backgroundColor=c0aede`;
+            };
+
+            container.classList.remove('hidden');
+            document.getElementById('exercise-section').classList.remove('hidden'); 
+            
+            toastMsg.textContent = `ចូលជោគជ័យ! សូមស្វាគមន៍ "${selectedStudentObj.name}"`;
+            toast.classList.remove('hidden');
+            toast.classList.add('toast-enter');
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('hidden');
+            }, 3500);
+        }
+
+        // =====================================================================
+        // មុខងារសម្រាប់គ្រូ (Teacher Panel)
+        // =====================================================================
+        function openTeacherModal() {
+            const pin = prompt("សូមបញ្ចូលលេខសម្ងាត់សម្រាប់គ្រូ (PIN):");
+            if (pin === TEACHER_PIN) {
+                renderCompletedStudents();
+                document.getElementById('teacher-modal').classList.remove('hidden');
+            } else if (pin !== null) {
+                alert("❌ លេខសម្ងាត់មិនត្រឹមត្រូវ!");
+            }
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('teacher-modal').classList.add('hidden');
+        }
+
+        function renderCompletedStudents() {
+            const list = document.getElementById('completed-students-list');
+            list.innerHTML = '';
+            let hasCompleted = false;
+
+            Object.keys(studentData).forEach(id => {
+                const stu = studentData[id];
+                if (stu.completed) {
+                    hasCompleted = true;
+                    list.innerHTML += `
+                        <div class="flex items-center justify-between bg-purple-50 p-3 rounded-xl border border-purple-100">
+                            <div class="flex items-center gap-3">
+                                <img src="${stu.photo}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${id}'">
+                                <span class="font-bold text-gray-700">${id}: ${stu.name}</span>
+                            </div>
+                            <button onclick="allowRetake('${id}', this)" class="bg-red-100 text-red-600 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm shadow-sm active:scale-95">
+                                🔄 អនុញ្ញាត
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+
+            if (!hasCompleted) {
+                list.innerHTML = '<p class="text-center text-gray-500 italic py-6">មិនទាន់មានសិស្សណាម្នាក់ធ្វើរួចទេ</p>';
+            }
+        }
+
+        async function allowRetake(studentId, btnElement) {
+            if(!confirm(`តើអ្នកពិតជាចង់អនុញ្ញាតឱ្យសិស្ស "${studentData[studentId].name}" ធ្វើលំហាត់ឡើងវិញមែនទេ?\n(ទិន្នន័យពិន្ទុចាស់នឹងត្រូវបានលុប)`)) return;
+            
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = '⏳...';
+            btnElement.disabled = true;
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'resetStudent', studentId: studentId }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert("✅ ជោគជ័យ! សិស្សអាចចូលធ្វើលំហាត់ឡើងវិញបានហើយ។");
+                    location.reload(); // Refresh ទំព័រដើម្បីអាប់ដេតបញ្ជី
+                } else {
+                    let errMsg = result.message || "Reset failed";
+                    if (errMsg.includes('null')) {
+                        errMsg = "រកមិនឃើញផ្ទាំង 'Answer' នៅក្នុង Google Sheets ទេ។";
+                    }
+                    throw new Error(errMsg);
+                }
+            } catch(e) {
+                alert("❌ មានបញ្ហា៖ " + e.message);
+                btnElement.innerHTML = originalText;
+                btnElement.disabled = false;
+            }
+        }
+        // =====================================================================
 
         function checkTyping(id, correctAns) {
             const inputVal = document.getElementById('input-' + id).value;
             const feedEl = document.getElementById('feed-' + id);
-            
             if (inputVal === '') return;
-
-            const isCorrect = (inputVal == correctAns || inputVal == toKhmerNum(correctAns));
             
+            // បំប្លែងលេខខ្មែរដែលវាយបញ្ចូលទៅលេខអារ៉ាប់ ដើម្បីផ្ទៀងផ្ទាត់ជាមួយ correctAns ដែលជាលេខអារ៉ាប់
+            const arabicInput = toArabicNum(inputVal);
+            
+            const isCorrect = (arabicInput == correctAns);
             if (isCorrect) {
                 scores[id] = 1;
                 feedEl.textContent = "✅ ត្រឹមត្រូវ";
@@ -336,7 +559,6 @@
             }
         }
 
-        // ៣. មុខងារអូសទាញ (Drag and Drop)
         const draggables = document.querySelectorAll('.draggable');
         const droppables = document.querySelectorAll('.droppable');
 
@@ -373,7 +595,7 @@
             const correctAnswer = droppable.getAttribute('data-answer');
             const feedbackEl = document.getElementById('feed-' + droppable.id);
 
-            droppable.textContent = toKhmerNum(value);
+            droppable.textContent = toKhmerNum(value); // បង្ហាញជាលេខខ្មែរ
             
             if (value === correctAnswer) {
                 scores[droppable.id] = 1;
@@ -396,7 +618,6 @@
             }
         }
 
-        // ការគាំទ្រការអូសទាញលើទូរស័ព្ទ (Touch Event)
         let touchElement = null, originalParent = null, originalNextSibling = null;
         function handleTouchStart(e) {
             touchElement = e.target;
@@ -438,7 +659,6 @@
             touchElement = null;
         }
 
-        // ៤. មុខងារបញ្ជូនពិន្ទុ
         async function submitScore() {
             if (!currentStudentId) {
                 alert("សូមជ្រើសរើសឈ្មោះសិស្សនៅខាងលើជាមុនសិន មុននឹងបញ្ជូនចម្លើយ!");
@@ -470,16 +690,25 @@
                 const result = await response.json();
                 if (result.status === 'success') {
                     alert(`✅ សូមអបអរសាទរ! ឯកសារត្រូវបានបញ្ជូន។ អ្នកទទួលបានពិន្ទុ: ${totalCorrect}/${totalQuestions}`);
+                    
+                    // បន្ទាប់ពីបញ្ជូនជោគជ័យ លាក់សិស្សចេញពីបញ្ជី
+                    studentData[currentStudentId].completed = true;
+                    document.querySelector(`#student-select option[value="${currentStudentId}"]`).remove();
+                    document.getElementById('student-photo-container').classList.add('hidden');
+                    document.getElementById('exercise-section').classList.add('hidden'); // លាក់លំហាត់វិញ
+                    document.getElementById('student-select').value = "";
+                    currentStudentId = "";
+                    currentStudentName = "";
                 } else {
-                    throw new Error("Server error");
+                    let errMsg = result.message || "Server error";
+                    if (errMsg.includes('appendRow') || errMsg.includes('null')) {
+                        errMsg = "រកមិនឃើញកន្លែងផ្ទុកពិន្ទុទេ!\nសូមចូលទៅកាន់ Google Sheets របស់អ្នក រួចបង្កើតផ្ទាំងថ្មីមួយ (Add Sheet) ហើយដាក់ឈ្មោះវាថា 'Answer' ។";
+                    }
+                    throw new Error(errMsg);
                 }
             } catch (e) {
-                if (e.message === "Not configured") {
-                    alert(`[សាកល្បង] ពិន្ទុអ្នកគឺ: ${totalCorrect}/${totalQuestions}\n\n(សូមដាក់ Web App URL ជាមុនសិន ទើបអាចបញ្ជូនទៅ Google Sheets បាន)`);
-                } else {
-                    alert("❌ មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ។ សូមពិនិត្យមើលអ៊ីនធឺណិត ឬសាកល្បងម្តងទៀត!");
-                    console.error(e);
-                }
+                alert("❌ មានបញ្ហា៖ " + e.message);
+                console.error(e);
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
